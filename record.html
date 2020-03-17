@@ -1,0 +1,67 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="assets/libs/layui/css/layui.css"/>
+    <link rel="stylesheet" href="assets/css/common.css">
+    <link rel="stylesheet" href="assets/module/admin.css"/>
+    <link rel="stylesheet" href="assets/module/formSelects/formSelects-v4.css"/>
+    <script type="text/javascript" src="assets/libs/jquery/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="assets/libs/layui/layui.js"></script>
+    <style>
+        .layui-input, .layui-textarea{
+            width: 80%;
+        }
+        .layui-form-label{
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+        <div class="layui-fluid">
+                <div class="layui-card">
+                    <div class="layui-card-body">
+                        <table class="layui-table h60" id="examine" lay-filter="examine"></table>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            layui.config({
+                base: 'assets/module/'
+            }).extend({
+                serverUrl: 'base_serverUrl',
+            }).use(['layer', 'form', 'table','config', 'util','element','serverUrl'], function () {
+                var $ = layui.jquery;
+                var layer = layui.layer;
+                var form = layui.form;
+                form.render();
+                var config = layui.config;
+                var table = layui.table;
+                var util = layui.util;
+                var element = layui.element;
+                var serverUrl = layui.serverUrl;
+                var selectOption = layui.selectOption;
+                function GetQueryString(parmname){
+                    var reg = new RegExp("(^|&)"+ parmname +"=([^&]*)(&|$)");
+                    var r = window.location.search.substr(1).match(reg);
+                    if(r!=null)return  unescape(r[2]); return null;
+                }
+                var id = GetQueryString("id");
+                table.render({
+                    elem: '#examine',
+                    url: serverUrl+'qisheng/User/get_user_examine_lst.html?user_id=' + id,
+                    cellMinWidth: 100,
+                    cols: [[
+                        {type: 'numbers'},
+                        {field: 'create_time', title: '审核时间'},
+                        {field: 'common', title: '审核意见'}
+                    ]],
+                })
+            })
+        </script>
+        
+</body>
+</html>

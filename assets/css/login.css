@@ -1,0 +1,253 @@
+/** 登录页面样式 */
+
+@media screen and (max-width:1680px){
+	body{
+		font-size: 60px;
+	}
+}
+@media screen and (min-width: 1700px){
+    body{
+        font-size: 90px;
+    }
+}
+
+body {
+    background-image: url("../../assets/images/bg.png");
+    background-position: top left;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-color: #f0f2f5;
+    margin: 0;
+    padding: 0;
+    min-width: 900px;
+    /* font-size: 80px; */
+    /* font-size: 1em; */
+}
+html{
+    font-size: 100%;
+}
+
+.login-wrapper, body, html {
+    height: 100%
+}
+
+.login-wrapper {
+    overflow: auto;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.login-body {
+    padding: 10px 10px 40px 10px;
+}
+
+.login-body > .layui-card {
+    width: 11.37em;
+    /* width: 71.063em; */
+    /* margin: 0 auto; */
+    /* opacity: 0.9; */
+    background-color: transparent;
+}
+
+.login-body .layui-card-header {
+    font-weight: 700;
+    font-size: 0.15em;
+    /* left: 10px; */
+    line-height: none;
+    top: 27px;
+    border: none!important;
+    padding: 0 27px;
+    position: absolute;
+}
+
+.login-body .currentForm{
+    width: 4.48em;
+    margin: 1.24em auto 0;
+    padding: 0;
+}
+
+.rightBorder{
+    /* border-width: 1em;
+    border-style: solid;
+    border-color:  rgb(112,112,112)!important; */
+    position: relative;
+}
+
+.rightBorder::after{
+    content: '';
+    width: 0.02em;
+    height: 0.37em;
+    background-color: #999999;
+    position: absolute;
+    top: 0.11em;
+    right: 0;
+}
+
+.borderNone{
+    border: none!important;
+}
+
+.border{
+    border: 0.03em solid #999999;
+    border-radius: 0.05em;
+    z-index: 10;
+}
+
+.login-body .layui-form-pane .layui-form-label {
+    width: auto;
+}
+
+.login-body .layui-form-pane .layui-input-block {
+    /* margin-left: 0.48em; */
+}
+
+.login-body .login-captcha {
+    width: 100%;
+    cursor: pointer;
+}
+
+.login-body .login-other > * {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.10em;
+    font-size: 0.14em;
+}
+
+.login-body .login-other .layui-icon {
+    position: relative;
+    top: 0.02em;
+    font-size: 0.26em;
+}
+
+.login-body .login-other a:hover {
+    opacity: .8;
+}
+
+.layui-icon-login-qq {
+    color: #3492ED
+}
+
+.login-body .title{
+    text-align: center;
+    margin: 0 0 0.51em!important;
+}
+
+.layui-icon-login-wechat {
+    color: #4DAF29
+}
+
+.layui-icon-login-weibo {
+    color: #CF1900
+}
+
+.blue{
+    background-color: #0d7871!important;
+    height: 2.143em;
+    border-radius: 0.18em;
+    font-size: 0.28em;
+    letter-spacing: 0.01em;
+}
+
+/* .layui-form-item{
+    margin-bottom: 35px!important;
+} */
+
+.dengluBtm{
+    margin-bottom: 0.89em!important;
+}
+
+/** 底部样式 */
+.login-footer {
+    text-align: center;
+    font-size: 0.18em;
+    color: rgba(255, 255, 255, 0.7) !important;
+    padding-bottom: 2.1em;
+}
+
+.login-footer span {
+    padding: 0 0.05em
+}
+
+.login-footer a {
+    padding: 0 0.05em;
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.login-footer a:hover {
+    color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/** 头部样式 */
+.login-header {
+    font-family: Myriad Pro, Helvetica Neue, Arial, Helvetica, sans-serif;
+    font-size: 0.20em;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85) !important;
+    padding: 0.10em;
+}
+
+.login-header img {
+    height: 0.40em;
+}
+
+/** 移动设备样式 */
+@media screen and (min-height: 590px) {
+    .login-footer {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+    }
+}
+
+@media screen and (min-height: 670px) {
+    .login-body {
+        padding: 110px 10px 40px 10px;
+    }
+}
+
+/** 辅助样式 */
+.layui-link1 {
+    position: absolute;
+    top: 0.10em;
+    right: 0.10em;
+    font-size: 0.18em;
+    color: #f40 !important;
+}
+.layui-link {
+    color: #0d7871 !important;
+}
+
+.layui-link:hover {
+    opacity: .8;
+}
+
+.pull-right {
+    float: right;
+}
+
+.inline-block {
+    display: inline-block;
+}
+
+.login-header {
+    color: rgba(0, 0, 0, .85) !important;
+}
+
+.login-footer {
+    color: #fff !important;
+}
+
+.login-footer a {
+    color: rgba(0, 0, 0, 0.7) !important;
+}
+
+.login-footer a:hover {
+    color: rgba(0, 0, 0, 0.4) !important;
+}
+
+.layui-layer-btn .layui-layer-btn0{
+    background-color: #0d7871!important;
+}

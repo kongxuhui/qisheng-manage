@@ -1,0 +1,325 @@
+
+<style>
+    #roleAuthTable + .layui-table-view .layui-table tbody tr:hover {
+        background-color: transparent;
+    }
+    .layui-form-select dl { max-height:180px !important; }
+    /* layUI */
+    .layui-form-onswitch {
+        border-color: #0d7871!important;
+        background-color: #0d7871!important;
+    }
+    .layui-form-switch{
+        border: 1px solid #0d7871!important;
+        background-color: #0d7871!important;
+    }
+    .layui-form-switch em{
+        color: #fff!important;
+    }
+    .layui-form-switch i{
+        background-color: #fff;
+    }
+    .layui-form-select dl { max-height:100px !important; }
+</style>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-form toolbar">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <!-- <div class="layui-input-inline">
+                            <select id="city" name="city" lay-search>
+                                <option value="" selected>选择城市</option>
+                                <option value="010">太原</option>
+                                <option value="021">石家庄</option>
+                                <option value="0571">北京</option>
+                            </select>
+                        </div>
+                        <div class="layui-input-inline">
+                            <select name="hanye" lay-search>
+                                <option value="" selected>选择企业</option>
+                                <option value="040">阿里</option>
+                                <option value="031">腾讯</option>
+                                <option value="051">百度</option>
+                            </select>
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="text" class="layui-input" id="test16" placeholder="选择时间">
+                        </div> -->
+                        <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <input id="keyWordtSearch" class="layui-input" type="text" placeholder="关键字查询"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button id="roleBtnSearch" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>查询</button>
+                        <button id="roleBtnAdd" class="layui-btn icon-btn"><i class="layui-icon">&#xe654;</i>添加</button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="layui-table" id="qiyeTable" lay-filter="qiyeTable"></table>
+        </div>
+    </div>
+</div>
+    
+    <!-- 表格状态列 -->
+    <script type="text/html" id="authState">
+        <input type="checkbox" checked="" name="open" lay-skin="switch" lay-filter="switchTest" lay-text="正常|关闭">
+    </script>
+    <!-- 表格操作列 -->
+    <script type="text/html" id="roleTableBar">
+        <a class="layui-btn layui-btn-primary layui-btn-xs bgeee" lay-event="edit">修改</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs bg999" lay-event="del">删除</a>
+    </script>
+    <!-- 表单弹窗 -->
+    <script type="text/html" id="roleForm">
+        <form lay-filter="roleForm" class="layui-form model-form">
+            <input name="id" type="hidden"/>
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="txt-impt">*</span>企业名称</label>
+                <div class="layui-input-block">
+                    <input name="name" placeholder="请输入企业名称" type="text" class="layui-input"
+                            maxlength="20" lay-verify="required" required/>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="txt-impt">*</span>所属行业</label>
+                <div class="layui-input-block">
+                    <select lay-verify="required" name="industry_id" id="industry_name" lay-search>
+                        <option value="" selected>选择行业</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="txt-impt">*</span>联系人</label>
+                <div class="layui-input-block">
+                    <input name="linkman" placeholder="请输入联系人" type="text" class="layui-input"
+                            maxlength="20" lay-verify="required" required/>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="txt-impt">*</span>电话</label>
+                <div class="layui-input-block">
+                    <input name="telephone" placeholder="请输入电话" type="text" class="layui-input"
+                            maxlength="20" lay-verify="required|phone|number" required/>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="txt-impt">*</span>地址</label>
+                <div class="layui-input-block">
+                    <input name="address" placeholder="请输入地址" type="text" class="layui-input"
+                            maxlength="20" lay-verify="required" required/>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="txt-impt">*</span>负责人</label>
+                <div class="layui-input-block">
+                    <input name="principal" placeholder="请输入负责人" type="text" class="layui-input"
+                            maxlength="20" lay-verify="required" required/>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="txt-impt">*</span>预计年购电总量</label>
+                <div class="layui-input-block">
+                    <input name="buy_electricity" placeholder="请输入购电总量" type="text" class="layui-input"
+                            maxlength="20" lay-verify="required|number" required/>
+                </div>
+            </div>
+            <!-- <div class="layui-form-item">
+                <label class="layui-form-label">用电总量</label>
+                <div class="layui-input-block">
+                    <input name="telephone" placeholder="请输入用电总量" type="text" class="layui-input"
+                            maxlength="20" lay-verify="required" required/>
+                </div>
+            </div> -->
+            <!-- <div class="layui-form-item">
+                <label class="layui-form-label">总用电对应的设备</label>
+                <div class="layui-input-block">
+                    <input name="eq_power_total_lst" placeholder="请输入总用电对应的设备" type="text" class="layui-input"
+                            maxlength="20" lay-verify="required" required/>
+                </div>
+            </div> -->
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="txt-impt">*</span>经度</label>
+                <div class="layui-input-block">
+                    <input name="longitude" placeholder="请输入经度" type="text" class="layui-input"
+                            maxlength="20" lay-verify="required" required/>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="txt-impt">*</span>纬度</label>
+                <div class="layui-input-block">
+                    <input name="latitude" placeholder="请输入纬度" type="text" class="layui-input"
+                            maxlength="20" lay-verify="required" required/>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">备注</label>
+                <div class="layui-input-block">
+                    <textarea name="remark" placeholder="请输入备注" class="layui-textarea" maxlength="200"></textarea>
+                </div>
+            </div>
+            
+            <div class="layui-form-item text-right">
+                <button class="layui-btn layui-btn-primary" type="button" ew-event="closeDialog">取消</button>
+                <button class="layui-btn" lay-filter="roleFormSubmit" lay-submit>保存</button>
+            </div>
+        </form>
+    </script>
+    <!-- 接口权限 -->
+    <script type="text/html" id="authModel">
+        <table class="layui-table" id="roleAuthTable" lay-filter="roleAuthTable"></table>
+    </script>
+    <!-- 表格状态列 -->
+    <!-- <script type="text/html" id="authState">
+        <input type="checkbox" lay-filter="authState" value="{{d.authority}}" lay-skin="switch"
+                lay-text="ON|OFF" {{d.checked==1?'checked':''}}/>
+    </script> -->
+    
+    <!-- js部分 -->
+    <script>
+        layui.use(['layer', 'form', 'table', 'util', 'admin', 'config', 'tableX', 'laydate'], function () {
+            var $ = layui.jquery;
+            var layer = layui.layer;
+            var form = layui.form;
+            form.render();
+            var table = layui.table;
+            var util = layui.util;
+            var admin = layui.admin;
+            var config = layui.config;
+            var tableX = layui.tableX;
+            var laydate = layui.laydate;
+            var serverUrl = layui.serverUrl
+            var selectOption = layui.selectOption;
+            $(".layui-breadcrumb").find("a").first().html("<i class='layui-icon layui-icon-refresh-3'></i>")
+            $(".layui-breadcrumb").find("a").first().attr("href","javascript:void(0);");
+            $(".layui-breadcrumb").find("a").first().attr("ew-event","refresh");
+
+            // 时间选择
+            laydate.render({
+                elem: '#test16'
+                ,type: 'datetime'
+                ,range: '到'
+                ,format: 'yyyy年M月d日H时m分s秒'
+            });
+    
+            //渲染表格
+            table.render({
+                elem: '#qiyeTable',
+                // skin: 'nob',
+                // url: config.base_server + 'role',
+                url: serverUrl + 'qisheng/Company/lst.html',
+                // where: {
+                //     access_token: config.getToken()
+                // },
+                page: true,
+                // cellMinWidth: 100,
+                cols: [[
+                    {type: 'numbers'},
+                    {field: 'name', title: '企业名称'},
+                    {field: 'linkman', title: '联系人'},
+                    {field: 'telephone', title: '电话'},
+                    {field: 'address', title: '地址'},
+                    {field: 'principal', title: '业务负责人', width: 200},
+                    {field: 'remark', title: '备注'},
+                    // {align: 'center', toolbar: '#authState', title: '状态', minWidth: 100},
+                    {align: 'center', toolbar: '#roleTableBar', title: '操作', minWidth: 200}
+                ]],
+                done: function(res){
+                    var cityArr = [];
+                    const s = new Set();
+                    res.data.forEach((ele, index) => {
+                        cityArr.push({id: ele.id, categoryName: ele.address})
+                    })
+                    cityArr.forEach(x => s.add(x));
+                    selectOption.showCategory(cityArr, 1,'#city')
+                    form.render('select');
+                }
+            });
+    
+            // 添加按钮点击事件
+            $('#roleBtnAdd').click(function () {
+                showEditModel();
+            });
+    
+            // 搜索按钮点击事件
+           $('#roleBtnSearch').click(function () {
+                var keyword = $('#keyWordtSearch').val();
+                table.reload('qiyeTable', {
+                    where: {
+                        where: { 
+                            'search_word': keyword
+                        } 
+                    }
+                });
+            });
+    
+            // 工具条点击事件
+            table.on('tool(qiyeTable)', function (obj) {
+                var data = obj.data;
+                if (obj.event === 'edit') { //修改
+                    showEditModel(data);
+                } else if (obj.event === 'del') { // 删除
+                    doDelete(obj);
+                } else if (obj.event === 'auth') {  // 权限管理
+                    showPermDialog(obj.data.roleId);
+                }
+            });
+    
+            // 删除
+        function doDelete(obj) {
+            layer.confirm('确定要删除吗？', {
+                offset: '65px',
+                skin: 'layui-layer-admin'
+            }, function (i) {
+                layer.close(i);
+                layer.load(2);
+                selectOption.send_req('qisheng/Company/del.html', {id: obj.data.id}, function(){
+                    layer.closeAll('loading');
+                    table.reload('qiyeTable');
+                    layer.closeAll();
+                })
+            });
+        }
+    
+            /// 显示编辑弹窗
+        function showEditModel(data) {
+            admin.open({
+                type: 1,
+                area: '600px',
+                // offset: '65px',
+                title: data ? '修改企业' : '添加企业',
+                content: $('#roleForm').html(),
+                success: function () {
+                    selectOption.send_req('qisheng/industry/lst.html', {}, function(data){
+                        var cityArr = [];
+                        const s = new Set();
+                        data.data.forEach((ele, index) => {
+                            cityArr.push({id: ele.id, categoryName: ele.name})
+                        })
+                        cityArr.forEach(x => s.add(x));
+                        selectOption.showCategory(cityArr, 1,'#industry_name')
+                        form.render('select');
+                    })
+                    if(data){
+                        $("#industry_name").val(data.industry_id);
+                    }
+                    form.val('roleForm', data);
+                    // 表单提交事件
+                    form.on('submit(roleFormSubmit)', function (d) {
+                        d.field.industry_name = $("#industry_name option:selected").text();
+                        layer.load(2);
+                        selectOption.send_req('qisheng/Company/add_or_save.html', d.field, function(data){
+                            layer.closeAll('loading');
+                            table.reload('qiyeTable');
+                            layer.closeAll();
+                        })
+                        return false;
+                    });
+                }
+            });
+        }
+        });
+    </script>

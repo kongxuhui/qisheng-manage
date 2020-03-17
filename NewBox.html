@@ -1,0 +1,192 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="assets/libs/layui/css/layui.css"/>
+    <link rel="stylesheet" href="assets/css/common.css">
+    <link rel="stylesheet" href="assets/module/admin.css"/>
+    <link rel="stylesheet" href="assets/module/formSelects/formSelects-v4.css"/>
+    <script type="text/javascript" src="assets/libs/jquery/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="assets/libs/layui/layui.js"></script>
+    <style>
+        .layui-input, .layui-textarea{
+            width: 80%;
+        }
+        .layui-form-label{
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+        <form class="layui-form" action="" lay-filter="example">
+            <input name="id" type="hidden"/>
+            <div class="layui-form-item">
+                <label class="layui-form-label">企业名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="company_name" disabled lay-verify="title" autocomplete="off" class="layui-input borNone">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">月份</label>
+                <div class="layui-input-block">
+                    <input type="text" name="buy_date" lay-verify="title" autocomplete="off" class="layui-input borNone">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">原用电金额</label>
+                <div class="layui-input-block">
+                    <input type="text" name="power_plane_money" lay-verify="title" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">使用启申后用电金额</label>
+                <div class="layui-input-block">
+                    <input type="text" name="power_count_money" lay-verify="title" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item" lay-filter="test1">
+                <label class="layui-form-label">当月电费构成</label>
+                <div class="dainfei">
+                    <div class="layui-form-item currentRow">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">名称</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="power_from_name" lay-verify="title" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">价格</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="power_from_price" lay-verify="title" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="add_de layui-inline">
+                            <span class="add mr20 pointer">+</span>
+                            <span class="delete pointer">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button lay-submit class="layui-btn" lay-filter="*">立即提交</button>
+                </div>
+            </div>
+        </form>
+        <script>
+            layui.config({
+                base: 'assets/module/'
+            }).use(['layer', 'form', 'table','config', 'util','element'], function () {
+                var $ = layui.jquery;
+                var layer = layui.layer;
+                var form = layui.form;
+                form.render();
+                var config = layui.config;
+                var table = layui.table;
+                var util = layui.util;
+                var element = layui.element;
+                var serverUrl = layui.serverUrl;
+                var selectOption = layui.selectOption;
+                function GetQueryString(parmname){
+                    var reg = new RegExp("(^|&)"+ parmname +"=([^&]*)(&|$)");
+                    var r = window.location.search.substr(1).match(reg);
+                    if(r!=null)return  unescape(r[2]); return null;
+                }
+                var id = GetQueryString("id");
+                // $('body').on("mouseenter", '.dainfei .currentRow' ,function(){
+                //     $('.add_de').removeClass('hidden').addClass('show')
+                // })
+                // $('body').on("mouseleave", '.dainfei .currentRow span' ,function () {
+                //     $('.add_de').removeClass('show').addClass('hidden')
+                // });
+                
+                var text = '<div class="layui-form-item currentRow"><div class="layui-inline"><label class="layui-form-label">名称</label><div class="layui-input-block"><input type="text" name="power_from_name" lay-verify="title" autocomplete="off" class="layui-input"></div></div><div class="layui-inline"><label class="layui-form-label">价格</label><div class="layui-input-block"><input type="text" name="power_from_price" lay-verify="title" autocomplete="off" class="layui-input"></div></div><div class="add_de layui-inline"><span class="add mr20 pointer">+</span><span class="delete pointer">-</span></div></div>'
+                $(document).on('click','.add',function(){
+                    $(this).parent().parent().after(text);
+                })
+                $(document).on('click','.delete',function(){
+                    $($(this).parent().parent()).remove();
+                });
+                function getValues(inputName) {
+                    var values = [];
+                    $('input[name=' + inputName + ']').each(function(i, v) {
+                        values.push(v.value);
+                    })
+                    return values;
+                }
+                $.ajax({
+                    type: "GET",
+                    url: "https://wx.sdkndsm.com/qishen/tp5/public/index.php/qisheng/Powerbuy/power_config_detail.html",
+                    data: {
+                        id: id
+                    },
+                    dataType: "json",
+                    success: function(data){
+                        form.val("example", { //formTest 即 class="layui-form" 所在元素属性 lay-filter="" 对应的值
+                        "id": data.obj.id
+                        , "company_name": data.obj.company_name // "name": "value"
+                        ,"buy_date": data.obj.buy_date.substring(0,7)
+                        ,"power_count_money": data.obj.power_count_money
+                        ,"power_plane_money": data.obj.power_plane_money
+                        });
+                        data.obj.consist_lst.forEach((ele, i) => {
+                            $($('input[name = power_from_name]')[i]).val(ele.power_from_name)
+                            $($('input[name = power_from_price]')[i]).val(String(ele.power_from_price))
+                            if(i < data.obj.consist_lst.length - 1){
+                                $($('input[name = power_from_name]')[i]).parent().parent().parent().after(text);
+                            }
+                        })
+                    }
+                })
+                let arr = [];
+                for (var i = 0; i < getValues('power_from_name').length; i++) {
+                    var activeSubjectsObject = {};
+                    for (var j = 0; j < getValues('power_from_price').length; j++) {
+                        if (i == j) {
+                            activeSubjectsObject.power_from_name = getValues('power_from_name')[i];
+                            activeSubjectsObject.power_from_price = getValues('power_from_price')[j];
+                            arr.push(activeSubjectsObject);
+                        }
+                    }
+                }
+                // var subData = {};
+                // subData.consist_lst = JSON.stringify(arr)
+                // subData.id = $($('input[name = id]')[0]).val()
+                // subData.company_name = $($('input[name = company_name]')[0]).val()
+                // subData.power_count_money = $($('input[name = power_count_money]')[0]).val()
+                // subData.power_plane_money = $($('input[name = power_plane_money]')[0]).val()
+                // config.putToken(subData);
+                form.on('submit(*)', function(data){
+                    let arr = [];
+                    for (var i = 0; i < getValues('power_from_name').length; i++) {
+                        var activeSubjectsObject = {};
+                        for (var j = 0; j < getValues('power_from_price').length; j++) {
+                            if (i == j) {
+                                activeSubjectsObject.power_from_name = getValues('power_from_name')[i];
+                                activeSubjectsObject.power_from_price = getValues('power_from_price')[j];
+                                arr.push(activeSubjectsObject);
+                            }
+                        }
+                    }
+                    data.field.consist_lst = JSON.stringify(arr)
+                    delete data.field.power_from_name
+                    delete data.field.power_from_price
+                    $.ajax({
+                        type: "GET",
+                        url: "https://wx.sdkndsm.com/qishen/tp5/public/index.php/qisheng/Powerbuy/power_config.html",
+                        data: data.field,
+                        dataType: "json",
+                        success: function(data){
+                            layer.closeAll('page');
+                        }
+                    })
+
+                    return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+                });
+            })
+        </script>
+        
+</body>
+</html>

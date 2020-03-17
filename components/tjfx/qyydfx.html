@@ -1,0 +1,400 @@
+<style>
+    #roleAuthTable + .layui-table-view .layui-table tbody tr:hover {
+        background-color: transparent;
+    }
+</style>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-form toolbar">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <select name="company_id" id="company" lay-search>
+                                <option value="" selected>选择企业</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div class="layui-input-inline wb400">
+                            <input type="text" class="layui-input" id="test16" placeholder="选择时间">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button id="roleBtnSearch" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>查询</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-row layui-col-space20 mt20">
+        <div class="layui-col-xs6 layui-col-sm6 layui-col-md6 layui-col-lg6 relative">
+            <div class="layui-input-inline absolute r25 t40 z10">
+                <select name="date1" id="date1" lay-search>
+                    <option value="">选择日期范围</option>
+                    <option value="2" selected>日</option>
+                    <option value="4">月</option>
+                    <option value="5">年</option>
+                </select>
+            </div>
+            <div id="main1" style="width: 100%;height:300px;" class="bgfff"></div>
+        </div>
+        <div class="layui-col-xs6 layui-col-sm6 layui-col-md6 layui-col-lg6 relative">
+            <div class="layui-input-inline absolute r25 t40 z10">
+                <select name="date2" id="date2" lay-search>
+                    <option value="" selected>选择日期范围</option>
+                    <option value="2">日</option>
+                    <option value="4" selected>月</option>
+                    <option value="5">年</option>
+                </select>
+            </div>
+            <div id="main2" style="width: 100%;height:300px;" class="bgfff"></div>
+        </div>
+    </div>
+    <div class="layui-row layui-col-space20 mt20">
+        <div class="layui-col-xs12 layui-col-sm12 layui-col-md12 layui-col-lg12 relative">
+            <div class="layui-input-inline absolute r25 t40 z10">
+                <select name="date3" id="date3" lay-search>
+                    <option value="">选择日期范围</option>
+                    <option value="1" selected>15分钟</option>
+                    <option value="2">日</option>
+                    <option value="4">月</option>
+                    <option value="5">年</option>
+                </select>
+            </div>
+            <div id="main3" style="width: 100%;height:300px;" class="bgfff"></div>
+        </div>
+    </div>
+</div>
+
+<!-- js部分 -->
+<script>
+    layui.use(['layer', 'form', 'util', 'admin', 'config', 'tableX', 'laydate'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        form.render();
+        var table = layui.table;
+        var util = layui.util;
+        var admin = layui.admin;
+        var config = layui.config;
+        var tableX = layui.tableX;
+        var laydate = layui.laydate;
+        var serverUrl = layui.serverUrl;
+        var selectOption = layui.selectOption;
+        $(".layui-breadcrumb").find("a").first().html("<i class='layui-icon layui-icon-refresh-3'></i>")
+            $(".layui-breadcrumb").find("a").first().attr("href","javascript:void(0);");
+            $(".layui-breadcrumb").find("a").first().attr("ew-event","refresh");
+
+        // 下拉框赋值
+        selectOption.send_req('qisheng/Company/lst.html', {}, function(data){
+            var hyArr = [];
+            const s = new Set();
+            data.data.forEach((ele, index) => {
+                hyArr.push({id: ele.id, categoryName: ele.name})
+            })
+            hyArr.forEach(x => s.add(x));
+            selectOption.showCategory(hyArr, 1,'#company')
+            form.render('select');
+        })
+
+        // 时间选择
+        laydate.render({
+            elem: '#test16'
+            ,type: 'datetime'
+            ,range: ','
+            ,format: 'yyyy-M-d HH:mm:ss'
+        });
+        
+        $('#date1').on('change',function () {
+            var keyword1 = $('#company').val();
+            var keyword2 = $('#test16').val();
+            var subNum;
+            if($('#date1 option:selected').val() == '2'){
+                subNum = 11
+            }else if($('#date1 option:selected').val() == '4'){
+                subNum = 7    
+            }else{
+                subNum = 4
+            }
+            var formdata1 = {
+                company_id: keyword1,
+                date_area: keyword2,
+                compare_type: $('#date1 option:selected').val()
+            }
+        　　date1(formdata1, subNum)
+        })
+        $('#date2').on('change',function () {
+            var keyword1 = $('#company').val();
+            var keyword2 = $('#test16').val();
+            var subNum;
+            if($('#date2 option:selected').val() == '2'){
+                subNum = 11
+            }else if($('#date2 option:selected').val() == '4'){
+                subNum = 7    
+            }else{
+                subNum = 4
+            }
+        　　var formdata2 = {
+                company_id: keyword1,
+                date_area: keyword2,
+                compare_type: $('#date2 option:selected').val()
+            }
+            date2(formdata2, subNum);
+        })
+        $('#date3').on('change',function () {
+        　　var keyword1 = $('#company').val();
+            var keyword2 = $('#test16').val();
+            var subNum;
+            if($('#date3 option:selected').val() == '1'){
+                subNum = 8
+            }else if($('#date3 option:selected').val() == '2'){
+                subNum = 11    
+            }else if($('#date3 option:selected').val() == '4'){
+                subNum = 7
+            }else{
+                subNum = 4
+            }
+            var formdata3 = {
+                company_id: keyword1,
+                date_area: keyword2,
+                area_buy_user_data_type: $('#date3 option:selected').val()
+            }
+            date3(formdata3, subNum);
+        })
+        // 进来页面加载
+        date1({area_buy_user_data_type: $('#date1 option:selected').val()}, 11);
+        date2({area_buy_user_data_type: $('#date2 option:selected').val()}, 7);
+        date3({area_buy_user_data_type: $('#date3 option:selected').val()}, 8);
+        
+        
+        // 搜索按钮点击事件
+        $('#roleBtnSearch').click(function () {
+            console.log($('#test16').val())
+            var keyword1 = $('#company').val();
+            var keyword2 = $('#test16').val();
+            var formdata1 = {
+                company_id: keyword1,
+                date_area: keyword2,
+                compare_type: $('#date1 option:selected').val()
+            }
+            var formdata2 = {
+                company_id: keyword1,
+                date_area: keyword2,
+                compare_type: $('#date2 option:selected').val()
+            }
+            var formdata3 = {
+                company_id: keyword1,
+                date_area: keyword2,
+                area_buy_user_data_type: $('#date3 option:selected').val()
+            }
+            date1(formdata1);
+            date2(formdata2);
+            date3(formdata3);
+        });
+        function date1(formdata, subNum){
+            selectOption.send_req('qisheng/Companyanalysis/compare_data.html', formdata, function(data){
+                var arrr1 = [];
+                var arrr2 = [];
+                var arrr3 = [];
+                data.forEach((item) => {
+                    arrr1.push(item.datat.substring(0,subNum))
+                    arrr2.push(item.psum)
+                    arrr3.push(item.buy_electricity)
+                })
+                mychart1($('#date1 option:selected').text(), arrr1, arrr3, arrr2);
+            })
+        }
+        function date2(formdata, subNum){
+            selectOption.send_req('qisheng/Companyanalysis/compare_data.html', formdata, function(data){
+                var arrr1 = [];
+                var arrr2 = [];
+                var arrr3 = [];
+                data.forEach((item) => {
+                    arrr1.push(item.datat.substring(0,subNum))
+                    arrr2.push(item.psum)
+                    arrr3.push(item.buy_electricity)
+                })
+                mychart3($('#date2 option:selected').text(), arrr1, arrr3, arrr2);
+            })
+        }
+        function date3(formdata, subNum){
+            selectOption.send_req('qisheng/Companyanalysis/compare_data.html', formdata, function(data){
+                var arrr1 = [];
+                var arrr2 = [];
+                var arrr3 = [];
+                if(subNum == 8){
+                    data.forEach((item) => {
+                        arrr1.push(item.datat.substring(item.datat.length-subNum))
+                        arrr2.push(item.buy_electricity)
+                        arrr3.push(item.psum)
+                    })
+                }else{
+                    data.forEach((item) => {
+                        arrr1.push(item.datat.substring(0,subNum))
+                        arrr2.push(item.buy_electricity)
+                        arrr3.push(item.psum)
+                    })
+                }
+                
+                myChart2($('#date3 option:selected').text(), arrr1, arrr2, arrr3);
+            })
+        }
+        // 图表
+        function mychart1(name,xdata,ydata1,ydata2){
+            // 基于准备好的dom，初始化echarts实例
+            var myChart = echarts.init(document.getElementById('main1'));
+
+            option2 = {
+                title: {
+                    text: '企业' +name+ '用电和购电对比',
+                        left: '20',
+                        y: '10'
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        animation: false
+                    }
+                },
+                legend: {
+                    data:['购电量','用电量']
+                },
+                xAxis: {
+                    type: 'category',
+                    splitLine: {
+                        show: false
+                    },
+                    data: xdata
+                },
+                yAxis: {
+                    type: 'value',
+                    boundaryGap: [0, '100%'],
+                    splitLine: {
+                        show: false
+                    }
+                },
+                series: [{
+                    name: '购电量',
+                    type: 'line',
+                    showSymbol: false,
+                    hoverAnimation: false,
+                    data: ydata1
+                },{
+                    name: '用电量',
+                    type: 'line',
+                    showSymbol: false,
+                    hoverAnimation: false,
+                    data: ydata2
+                }]
+            };
+
+            myChart.setOption(option2);
+        }
+        function mychart3(name,xdata,ydata1,ydata2){
+            // 基于准备好的dom，初始化echarts实例
+            var myChart = echarts.init(document.getElementById('main2'));
+
+            option1 = {
+                title: {
+                    text: '企业' +name+ '用电和购电对比',
+                        left: '20',
+                        y: '10'
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        animation: false
+                    }
+                },
+                legend: {
+                    data:['购电量','用电量']
+                },
+                xAxis: {
+                    type: 'category',
+                    splitLine: {
+                        show: false
+                    },
+                    data: xdata
+                },
+                yAxis: {
+                    type: 'value',
+                    boundaryGap: [0, '100%'],
+                    splitLine: {
+                        show: false
+                    }
+                },
+                series: [{
+                    name: '购电量',
+                    type: 'line',
+                    showSymbol: false,
+                    hoverAnimation: false,
+                    data: ydata1
+                },{
+                    name: '用电量',
+                    type: 'line',
+                    showSymbol: false,
+                    hoverAnimation: false,
+                    data: ydata2
+                }]
+            };
+
+            myChart.setOption(option1);
+        }
+        function myChart2(name,xdata, ydata1, ydata2){
+            // 基于准备好的dom，初始化echarts实例
+            var myChart = echarts.init(document.getElementById('main3'));
+            
+            // 指定图表的配置项和数据
+            option4 = {
+                title: {
+                    text: '企业' +name+ '用电和购电对比'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data:['购电量','用电量']
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                toolbox: {
+                    feature: {
+                        saveAsImage: {}
+                    }
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: xdata
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [
+                    {
+                        name:'购电量',
+                        type:'line',
+                        stack: '总量',
+                        data:ydata1
+                    },
+                    {
+                        name:'用电量',
+                        type:'line',
+                        stack: '总量',
+                        data:ydata2
+                    }
+                ]
+            };
+
+    
+            // 使用刚指定的配置项和数据显示图表。
+            myChart.setOption(option4);
+        }
+    
+    });
+</script>

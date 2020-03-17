@@ -1,0 +1,379 @@
+<style>
+    #roleAuthTable + .layui-table-view .layui-table tbody tr:hover {
+        background-color: transparent;
+    }
+    /* layUI */
+    .layui-form-onswitch {
+        border-color: #0d7871!important;
+        background-color: #0d7871!important;
+    }
+    .layui-form-switch{
+        border: 1px solid #0d7871!important;
+        background-color: #0d7871!important;
+    }
+    .layui-form-switch em{
+        color: #fff!important;
+    }
+    .layui-form-switch i{
+        background-color: #fff;
+    }
+    .layui-table-body{
+        overflow: hidden!important;
+    }
+</style>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-form toolbar">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <!-- <div class="layui-input-inline">
+                            <select name="city" lay-search>
+                                <option value="" selected>选择城市</option>
+                                <option value="010">太原</option>
+                                <option value="021">石家庄</option>
+                                <option value="0571">北京</option>
+                            </select>
+                        </div> -->
+                        <div class="layui-input-inline">
+                            <select name="company_id" id="company" lay-search>
+                                <option value="" selected>选择企业</option>
+                            </select>
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="text" class="layui-input" id="test16" placeholder="选择时间">
+                        </div>
+                        <div class="layui-input-inline">
+                            <label class="layui-form-label">预测范围：</label>
+                            <div class="layui-input-block">
+                                <!-- <input type="checkbox" checked="" name="open" lay-skin="switch" lay-filter="switchTest" lay-text="1天|15分钟"> -->
+                                <select name="hanye" id="forecast_type" lay-search>
+                                    <option value="" selected>选择</option>
+                                    <option value="1">15分钟</option>
+                                    <option value="2">日</option>
+                                    <option value="3">月</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button id="roleBtnSearch" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>查询</button>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-row">
+                <div class="layui-col-xs6 layui-col-sm6 layui-col-md12 layui-col-lg12">
+                    <table class="layui-table" id="roleTable" lay-filter="roleTable"></table>
+                </div>
+            </div>
+            <div class="layui-row mt10 hidden" id="zsechart">
+                <div class="mt30" id="mainParent"><div id="main" style="width: 80%;height:400px;" class="fl"></div></div>
+                <div id="zydl" class="fl">
+                    <div class="h50 mt50 lh30">
+                        <span>总用电量</span>
+                        <span class="bgcf40 h30 whiteoc inlineB w100 alignR pr20" id="sjydl"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    
+    <!-- 表格状态列 -->
+    <script type="text/html" id="authState">
+        <input type="checkbox" checked="" name="open" lay-skin="switch" lay-filter="switchTest" lay-text="正常|关闭">
+    </script>
+    <!-- 表格操作列 -->
+    <script type="text/html" id="roleTableBar">
+        <a class="layui-btn layui-btn-primary layui-btn-xs bgeee" lay-event="edit">修改</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs bg999" lay-event="del">删除</a>
+    </script>
+    <!-- 表单弹窗 -->
+    <script type="text/html" id="roleForm">
+        <form lay-filter="roleForm" class="layui-form model-form">
+            <input name="id" type="hidden"/>
+            <div class="layui-form-item">
+                <label class="layui-form-label">企业名称</label>
+                <div class="layui-input-block">
+                    <select name="company_id" lay-verify="required" id="company1" lay-search>
+                        <option value="" selected>选择企业</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">预测电量</label>
+                <div class="layui-input-block">
+                    <input disabled name="forecast_electricity" type="text" class="layui-input"
+                            maxlength="20" lay-verify="required|number" required/>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">实际采集用电量</label>
+                <div class="layui-input-block">
+                    <input name="get_use_electricity" placeholder="请输入实际采集用电量" type="text" class="layui-input"
+                            maxlength="20" lay-verify="required|number" required/>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">用电调整值</label>
+                <div class="layui-input-block">
+                    <input name="use_electricity_adjust" placeholder="请输入用电调整值" type="text" class="layui-input"
+                            maxlength="20" lay-verify="required|number" required/>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">预测时间</label>
+                <div class="layui-input-block">
+                    <input name="forecast_date" type="text" lay-verify="required" class="layui-input" id="test5" placeholder="选择售电月份">
+                </div>
+            </div>
+            <div class="layui-form-item text-right">
+                <button class="layui-btn layui-btn-primary" type="button" ew-event="closeDialog">取消</button>
+                <button class="layui-btn" lay-filter="roleFormSubmit" lay-submit>保存</button>
+            </div>
+        </form>
+    </script>
+    <!-- 接口权限 -->
+    <script type="text/html" id="authModel">
+        <table class="layui-table" id="roleAuthTable" lay-filter="roleAuthTable"></table>
+    </script>
+    <!-- 表格状态列 -->
+    <!-- <script type="text/html" id="authState">
+        <input type="checkbox" lay-filter="authState" value="{{d.authority}}" lay-skin="switch"
+                lay-text="ON|OFF" {{d.checked==1?'checked':''}}/>
+    </script> -->
+    
+    <!-- js部分 -->
+    <script>
+        layui.use(['layer', 'form', 'table', 'util', 'admin', 'config', 'tableX', 'laydate','element'], function () {
+            var $ = layui.jquery;
+            var layer = layui.layer;
+            var form = layui.form;
+            form.render();
+            var table = layui.table;
+            var util = layui.util;
+            var admin = layui.admin;
+            var config = layui.config;
+            var tableX = layui.tableX;
+            var laydate = layui.laydate;
+            var element = layui.element;
+            var serverUrl = layui.serverUrl;
+            var selectOption = layui.selectOption;
+            $(".layui-breadcrumb").find("a").first().html("<i class='layui-icon layui-icon-refresh-3'></i>")
+            $(".layui-breadcrumb").find("a").first().attr("href","javascript:void(0);");
+            $(".layui-breadcrumb").find("a").first().attr("ew-event","refresh");
+
+            // 时间选择
+            laydate.render({
+                elem: '#test16'
+                ,range: ','
+                ,format: 'yyyy-M-d'
+            });
+
+            selectOption.send_req('qisheng/Company/lst.html', {}, function(data){
+                var hyArr = [];
+                const s = new Set();
+                data.data.forEach((ele, index) => {
+                    hyArr.push({id: ele.id, categoryName: ele.name})
+                })
+                hyArr.forEach(x => s.add(x));
+                selectOption.showCategory(hyArr, 1,'#company')
+                form.render('select');
+            })
+    
+            //渲染表格
+            table.render({
+                elem: '#roleTable',
+                // skin: 'line',
+                url: serverUrl + 'qisheng/Powerforecast/lst.html',
+                // where: {
+                //     access_token: config.getToken()
+                // },
+                page: true,
+                // cellMinWidth: 100,
+                cols: [[
+                    {type: 'numbers'},
+                    {field: 'company_name', title: '企业名称'},
+                    {field: 'forecast_electricity', title: '预测电量(KW·h)'},
+                    {field: 'get_use_electricity', title: '实际采集用电量(KW·h)'},
+                    {field: 'use_electricity_adjust', title: '用电调整值'},
+                    {field: 'forecast_date', title: '预测时间'},
+                    {field: 'create_time', title: '添加时间'},
+                    {align: 'center', toolbar: '#roleTableBar', title: '操作', minWidth: 200}
+                ]]
+            });
+    
+
+            //点击某一行时间
+            table.on('row(roleTable)', function(obj){
+                $('#zsechart').removeClass('hidden');
+                $('#zydl').removeClass('hidden');
+                var a1 = obj.data.get_use_electricity + obj.data.use_electricity_adjust;
+                $('#sjydl').html(a1 + 'mwh')
+                selectOption.send_req('qisheng/Powerforecast/chart_data.html', {company_id: obj.data.company_id}, function(data){
+                    var data11 = [];
+                    var data22 = [];
+                    var data33 = [];
+                    var data44 = [];
+                    data.lst.forEach((ele) => {
+                        data11.push(ele.forecast_date.substring(0,11));
+                        data22.push(ele.forecast_electricity);
+                        data33.push(ele.use_electricity_adjust);
+                        data44.push(ele.get_use_electricity);
+                    })
+                    layer.closeAll('loading');
+                    var industry =  data.lst[0].company_name;
+                    myEcharts(data22,data33,data44,data11,industry);
+                })
+            });
+    
+             // 搜索按钮点击事件
+             $('#roleBtnSearch').click(function () {
+                var keyword = $('#company').val();
+                var date = $('#test16').val();
+                var forecast = $('#forecast_type').val();
+                table.reload('roleTable', {
+                    where: {
+                        where: { 
+                            'company_id': keyword,
+                            'date_area': date,
+                            'forecast_type':　forecast
+                        } 
+                    }
+                });
+            });
+    
+            // 工具条点击事件
+            table.on('tool(roleTable)', function (obj) {
+                var data = obj.data;
+                if (obj.event === 'edit') { //修改
+                    showEditModel(data);
+                } else if (obj.event === 'del') { // 删除
+                    doDelete(obj);
+                }
+            });
+    
+
+            //图表
+            function myEcharts(data1,data2,data3,data4,industry){
+                 // 基于准备好的dom，初始化echarts实例
+                 var myChart = echarts.init(document.getElementById('main'));
+        
+                // 指定图表的配置项和数据
+                option = {
+                    title: {
+                        text: industry + '用电预测图走势图',
+                        left: '20',
+                        y: '10'
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    legend: {
+                        data:['代理电量','实际用电量']
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '50',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    toolbox: {
+                        feature: {
+                            saveAsImage: {}
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        data: data4
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [
+                        {
+                            name:'代理电量',
+                            type:'line',
+                            stack: '总量',
+                            data: data1
+                        },
+                        {
+                            name:'预测电量',
+                            type:'line',
+                            stack: '总量',
+                            data: data2
+                        },
+                        {
+                            name:'实际用电量',
+                            type:'line',
+                            stack: '总量',
+                            data: data3
+                            // data:[220, 182, 191, 234, 290, 330, 310]
+                        }
+                    ]
+                };
+
+
+                // 使用刚指定的配置项和数据显示图表。
+                myChart.setOption(option);
+            }
+             // 删除
+             function doDelete(obj) {
+                layer.confirm('确定要删除吗？', {
+                    offset: 'auto',
+                    skin: 'layui-layer-admin'
+                }, function (i) {
+                    layer.close(i);
+                    layer.load(2);
+                    selectOption.send_req('qisheng/Powerforecast/del.html', {id: obj.data.id}, function(){
+                        layer.closeAll('loading');
+                        table.reload('roleTable');
+                        layer.closeAll();
+                    })
+                });
+            }
+    
+            // 显示编辑弹窗
+            function showEditModel(data) {
+                admin.open({
+                    type: 1,
+                    area: '600px',
+                    offset: 'auto',
+                    title: data ? '修改' : '添加',
+                    content: $('#roleForm').html(),
+                    success: function () {
+                        selectOption.send_req('qisheng/Company/lst.html', {}, function(data){
+                            var hyArr = [];
+                            const s = new Set();
+                            data.data.forEach((ele, index) => {
+                                hyArr.push({id: ele.id, categoryName: ele.name})
+                            })
+                            hyArr.forEach(x => s.add(x));
+                            selectOption.showCategory(hyArr, 1,'#company1')
+                            form.render('select');
+                        })
+                        if(data){
+                            $("#company1").val(data.company_id);
+                        }
+                        laydate.render({
+                            elem: '#test5'
+                            ,format: 'yyyy-MM-dd'
+                        });
+                        form.val('roleForm', data);
+                        // 表单提交事件
+                        form.on('submit(roleFormSubmit)', function (d) {
+                            d.field.company_name = $("#company1 option:selected").text();
+                            layer.load(2);
+                            selectOption.send_req('qisheng/Powerforecast/add_or_save.html', d.field, function(data){
+                                layer.closeAll('loading');
+                                table.reload('roleTable');
+                                layer.closeAll();
+                            })
+                            return false;
+                        });
+                    }
+                });
+            }
+        });
+    </script>

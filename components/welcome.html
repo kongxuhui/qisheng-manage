@@ -1,0 +1,350 @@
+<style>
+body{
+        font-size: 100px;
+    }
+    .layui-row{
+        min-width: 1000px;
+    }
+    .layui-layout-admin .layui-footer{
+        font-size: 0.15em;
+    }
+    /* .layui-layout-admin .layui-body{
+    	left: 200px;
+    } */
+</style>
+<div class="opcity">
+        <!-- <div class="text-center"> -->
+
+    <div class="layui-row layui-col-space22">
+        <div class="layui-col-xs6 layui-col-sm6 layui-col-md2dot4 layui-col-lg2dot4 minw200">
+            <div class="bgfff curre fs10 pt36 pb30 pl20">
+                <div class="mb16">平台运行天数</div>
+                <span class="fs14 spanI lvColor" id="tianshu"></span>
+            </div>
+        </div>
+        <div class="layui-col-xs6 layui-col-sm6 layui-col-md2dot4 layui-col-lg2dot4 minw200">
+            <div class="bgfff curre fs10 pt36 pb30 pl20">
+               <div class="mb16">代理电量</div>
+                <span class="fs14 spanI lvColor" id="dldl"></span>
+            </div>
+        </div>
+        <div class="layui-col-xs6 layui-col-sm6 layui-col-md2dot4 layui-col-lg2dot4 minw200">
+            <div class="bgfff curre fs10 pt36 pb30 pl20">
+                <div class="mb16">实际用电量</div>
+                <span class="fs14 spanI lvColor" id="ssydl"></span>
+            </div>
+        </div>
+        <div class="layui-col-xs6 layui-col-sm6 layui-col-md2dot4 layui-col-lg2dot4 minw200">
+            <div class="bgfff curre fs10 pt36 pb30 pl20">
+                <div class="mb16">采集点总数</div>
+                <span class="fs14 spanI lvColor" id="cjdzs"></span>
+            </div>
+        </div>
+        <div class="layui-col-xs6 layui-col-sm6 layui-col-md2dot4 layui-col-lg2dot4 minw200">
+            <div class="bgfff curre fs10 pt36 pb30 pl20">
+                <div class="mb16">平台用户数</div>
+                <span class="fs14 spanI lvColor" id="ptyhs"></span>
+            </div>
+        </div>
+    </div>
+    <div class="layui-row layui-col-space22">
+    <!-- <h2>欢迎使用EasyWeb后台开发框架！</h2> -->
+        <!-- 左側地圖 -->
+        <div class="layui-col-xs6 layui-col-sm6 layui-col-md6 layui-col-lg6 minw500" id="llll">
+            <div id="main" style="width: 100%;" class="bgfff"></div>
+        </div>
+        <!-- 右側折線圖 -->
+        <div class="layui-col-xs6 layui-col-sm6 layui-col-md6 layui-col-lg6 minw500" id="rrrr">
+            <div id="main1" style="width: 100%;" class="bgfff"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    layui.use(['layer',  'util', 'admin', 'config',  'element'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var util = layui.util;
+        var admin = layui.admin;
+        var config = layui.config;
+        var serverUrl = layui.serverUrl;
+        var selectOption = layui.selectOption;
+
+        $('#llll div').height($('.layui-layout').height() - 380)
+        $('#rrrr div').height($('.layui-layout').height() - 380)
+
+        
+        // var delay = (function(){
+        //     var timer = 0;
+        //     return function(callback, ms){
+        //         clearTimeout (timer);
+        //         timer = setTimeout(callback, ms);
+        //     }
+        // })();
+        // $(window).resize(function() {
+        //     delay(function(){
+        //         reset();
+        //     }, 2000)
+        // });
+
+
+        // var  is_set_size = 0;
+        // $(window).resize(function () {          //当浏览器大小变化时
+        //     is_set_size = 1;
+        //     setTimeout(function(){
+        //         console.log($(window).height())
+        //     },2000)
+        //     // alert($(window).height());          //浏览器时下窗口可视区域高度
+        //     // alert($(document).height());        //浏览器时下窗口文档的高度
+        //     // alert($(document.body).height());   //浏览器时下窗口文档body的高度
+        //     // alert($(document.body).outerHeight(true)); //浏览器时下窗口文档body的总高度 包括border padding margin
+        // });
+        // if(is_set_size = 1){
+        //     console.log(1)
+        //     is_set_size = 0
+        //     // setTimeout(reset(),2000)
+        // }else{
+        //     return false
+        // }
+        // reset();
+        // 初始化数据
+        // function reset(){
+            selectOption.send_req('qisheng/Main/home_page.html', {}, function(data){
+                $('#tianshu').html(data.run_day + '天')
+                $('#dldl').html(data.buy_num + 'MW·h')
+                $('#ssydl').html(data.buy_num + 'MW·h')
+                $('#cjdzs').html(data.eq_count)
+                $('#ptyhs').html(data.company_count)
+                var data1 = {};
+                var data2 = [];
+                var data3 = [];
+                var data4 = [];
+                data.company_lst.forEach((ele) => {
+                    var arr = [];
+                    arr.push(Number(ele.longitude),Number(ele.latitude))
+                    data1[ele.name] = arr;
+                    var obj = {name: ele.name, value: 40};
+                    data2.push(obj)
+                })
+                data.power_count_lst.forEach((ele) => {
+                    data3.push((ele.forecast_date.substring(ele.forecast_date.length-8)).substr(0,5));
+                    // data3.push(ele.forecast_date.substring(ele.forecast_date.length-8));
+
+                    data4.push(ele.sumpower);
+                })
+                myChart(data1,data2)
+                zhuzhuangtu(data3,data4);
+                
+            })
+        // }
+        $(window).resize(function(){
+            var myChart1 = echarts.init(document.getElementById('main1'));
+            var myChart = echarts.init(document.getElementById('main'));
+            myChart.resize();
+            myChart1.resize();
+
+        })
+        function zhuzhuangtu(data1,data2){
+            var myChart = echarts.init(document.getElementById('main1'));
+                // var dataAxis = ['点', '击', '柱', '子', '或', '者', '两', '指', '在', '触', '屏', '上', '滑', '动', '能', '够', '自', '动', '缩', '放'];
+                // var dataAxis = ['00:00','00:15','00:30','00:45','01:00','01:15','01:30','01:45','02:00','02:15','02:30','02:45','03:00','03:15','03:30','03:45','04:00','04:15','04:30','04:45','05:00','05:15','05:30','05:45','06:00','06:15','06:30','06:45','07:00','07:15','07:30','07:45','08:00','08:15','08:30','08:45','09:00','09:15','09:30','09:45','10:00','10:15','10:30','10:45','11:00','11:15','11:30','11:45','12:00','12:15','12:30','12:45','13:00','13:15','13:30','13:45','13:00','14:15','14:30','14:45','15:00','15:15','15:30','15:45','16:00','16:15','16:30','16:45','17:00','17:15','17:30','17:45','18:00','18:15','18:30','18:45','19:00','19:15','19:30','19:45','20:00','20:15','20:30','20:45','21:00','21:15','21:30','21:45','22:00','22:15','22:30','22:45','23:00','23:15','23:30','23:45']
+                // var dataAxis = ['17:30', '17:45', '18:00', '18:15', '18:30', '19:30']
+                var dataAxis = data1;
+                // var data = [220, 182, 191, 234, 290, 330, 310, 123, 442, 321, 90, 149, 210, 122, 133, 334, 198, 123, 125, 220];
+                var data = data2;
+                // var yMax = 500;
+                var dataShadow = [];
+
+                // for (var i = 0; i < data.length; i++) {
+                //     dataShadow.push(yMax);
+                // }
+
+                option = {
+                    color: ['#4e8cce'],
+                    title: {
+                        text: '当日每15分钟用电量累积',
+                        x:'53px',
+                        y: '55px',
+                        textStyle: {
+                            color: '#515151'
+                        }
+                        // subtext: 'Feature Sample: Gradient Color, Shadow, Click Zoom'
+                    },
+                     tooltip: {
+	                    trigger: 'item',
+	                      showContent:true,  //是否显示提示框浮层
+		                  formatter: function (params) {
+		                    // return params.name + ' : ' + params.value[2];
+		                    return '时间：'+params.name+"    用电量："+ params.value+"KW·h";
+	                    }
+		            },
+                    grid: {
+                        top: 100,
+                        bottom: 120
+                    },
+                    xAxis: {
+                        data: dataAxis,
+                        axisLabel: {
+                            rotate: 60
+                        },
+                        axisTick: {
+                            show: false
+                        },
+                        axisLine: {
+                            show: false
+                        },
+                        z: 10
+                    },
+                    yAxis: [
+                        {
+                            type : 'value'
+                        }
+                    ],
+                    dataZoom: [
+                        {
+                            type: 'inside'
+                        }
+                    ],
+                    series: [
+                        { // For shadow
+                            type: 'bar',
+                            itemStyle: {
+                                normal: {color: 'rgba(0,0,0,0.05)'}
+                            },
+                            barGap:'-100%',
+                            barCategoryGap:'40%',
+                            data: dataShadow,
+                            animation: false
+                        },
+                        {
+                            type: 'bar',
+                            // itemStyle: {
+                            //     normal: {
+                            //         color: new echarts.graphic.LinearGradient(
+                            //             0, 0, 0, 1,
+                            //             [
+                            //                 {offset: 0, color: '#83bff6'},
+                            //                 {offset: 0.5, color: '#188df0'},
+                            //                 {offset: 1, color: '#188df0'}
+                            //             ]
+                            //         )
+                            //     },
+                            //     emphasis: {
+                            //         color: new echarts.graphic.LinearGradient(
+                            //             0, 0, 0, 1,
+                            //             [
+                            //                 {offset: 0, color: '#2378f7'},
+                            //                 {offset: 0.7, color: '#2378f7'},
+                            //                 {offset: 1, color: '#83bff6'}
+                            //             ]
+                            //         )
+                            //     }
+                            // },
+                            data: data
+                        }
+                    ]
+                };
+                // 使用刚指定的配置项和数据显示图表。
+                myChart.setOption(option);
+        }
+        function myChart(data1,data2){
+                initEcharts("shanxi",data1,data2);
+                initEcharts("山西",data1,data2);
+        }
+        
+        function initEcharts(pName,data1,data2) {
+            var myChart = echarts.init(document.getElementById('main'));
+            var option = {
+                backgroundColor: '#fff',
+                title: {
+                    text: '用电企业分布图',
+                    // fontSize: 24,
+                    // subtext: 'data from PM25.in',
+                    // sublink: 'http://www.pm25.in',
+                    x:'53px',
+                    y: '55px',
+                    textStyle: {
+                        color: '#515151'
+                    }
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function (params) {
+                        // return params.name + ' : ' + params.value[2];
+                        return params.name;
+                    }
+                },
+                geo: {
+                    map: pName,
+                    label: {
+                        normal: {
+                            // areaColor: '#0d7871',
+                            color: '#fff',
+                            shadowColor: 'rgba(255, 255, 255, 1)',
+                            show: true,
+                            textStyle: {
+                                fontSize: 10
+                            },
+                        },
+                        emphasis: {
+                            show: true,
+                            color: '#fff',
+
+                        }
+                    },
+                    itemStyle: {
+                        normal: {
+                            areaColor: '#0d7871',
+                            borderColor: '#fff',
+                        },
+                        emphasis: {
+                            areaColor: '#43a635',
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: pName,
+                        type: 'scatter',
+                        mapType: pName,
+                        roam: false,//是否开启鼠标缩放和平移漫游
+                        top: "3%",//组件距离容器的距离
+                        coordinateSystem: 'geo',
+                        data:convertData(data1,data2),
+                        symbolSize: 6,
+                        label: {
+                            normal: {
+                                show: false,
+                            },
+                            emphasis: {
+                                show: false
+                            }
+                        },
+                        itemStyle: {
+                            color: '#4e8cce',
+                            emphasis: {
+                                borderColor: '#fff',
+                                borderWidth: 1
+                            }
+                        }
+                    }
+                ]
+            }
+            myChart.setOption(option);
+        }
+        function convertData(data1, data) {
+            var res = [];
+            var geoCoordMap = data1;
+            for (var i = 0; i < data.length; i++) {
+                var geoCoord = geoCoordMap[data[i].name];
+                if (geoCoord) {
+                    res.push({
+                        name: data[i].name,
+                        value: geoCoord.concat(data[i].value)
+                    });
+                }
+            }
+            return res;
+        };
+    })
+</script>

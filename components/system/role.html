@@ -1,0 +1,233 @@
+<style>
+    #roleAuthTable + .layui-table-view .layui-table tbody tr:hover {
+        background-color: transparent;
+    }
+</style>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-form toolbar">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label w-auto">查询：</label>
+                        <div class="layui-input-inline mr0">
+                            <input id="roleEdtSearch" class="layui-input" type="text" placeholder="输入关键字"/>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button id="roleBtnSearch" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>查询
+                        </button>
+                        <button id="roleBtnAdd" class="layui-btn icon-btn"><i class="layui-icon">&#xe654;</i>添加</button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="layui-table" id="roleTable" lay-filter="roleTable"></table>
+        </div>
+    </div>
+</div>
+
+<!-- 表格操作列 -->
+<script type="text/html" id="roleTableBar">
+    <a class="layui-btn layui-btn-primary layui-btn-xs bgeee" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs bg999" lay-event="del">删除</a>
+    <a class="layui-btn layui-btn-xs" lay-event="auth">接口权限</a>
+</script>
+<!-- 表单弹窗 -->
+<script type="text/html" id="roleForm">
+    <form lay-filter="roleForm" class="layui-form model-form">
+        <input name="role_id" type="hidden"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="txt-impt">*</span>角色名</label>
+            <div class="layui-input-block">
+                <input name="role_name" placeholder="请输入角色名" type="text" class="layui-input"
+                       maxlength="20" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">备注</label>
+            <div class="layui-input-block">
+                <textarea name="comments" placeholder="请输入备注" class="layui-textarea" maxlength="200"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item text-right">
+            <button class="layui-btn layui-btn-primary" type="button" ew-event="closeDialog">取消</button>
+            <button class="layui-btn" lay-filter="roleFormSubmit" lay-submit>保存</button>
+        </div>
+    </form>
+</script>
+
+<!-- 接口权限  -->
+<script type="text/html"  id="authModel">
+    <tree id="test13" class="ztree"></tree>
+</script>
+<!-- js部分 -->
+<script>
+    layui.use(['layer', 'form', 'table', 'util', 'admin', 'config', 'tableX', 'tree', 'util','serverUrl'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var util = layui.util;
+        var admin = layui.admin;
+        var config = layui.config;
+        var tableX = layui.tableX;
+        var serverUrl = layui.serverUrl;
+        var selectOption = layui.selectOption;
+        var tree = layui.tree;
+        $(".layui-breadcrumb").find("a").first().html("<i class='layui-icon layui-icon-refresh-3'></i>")
+            $(".layui-breadcrumb").find("a").first().attr("href","javascript:void(0);");
+            $(".layui-breadcrumb").find("a").first().attr("ew-event","refresh");
+        //渲染表格
+        table.render({
+            elem: '#roleTable',
+            url: serverUrl + 'qisheng/Sysrole/lst.html',
+            // where: {
+            //     access_token: config.getToken()
+            // },
+            page: false,
+            cellMinWidth: 100,
+            cols: [[
+                {type: 'numbers'},
+                {field: 'role_name', title: '角色名称'},
+                {field: 'comments', title: '备注'},
+                {field: 'create_time', title: '创建时间'},
+                {align: 'center', toolbar: '#roleTableBar', title: '操作', minWidth: 200}
+            ]]
+        });
+
+        // 添加按钮点击事件
+        $('#roleBtnAdd').click(function () {
+            showEditModel();
+        });
+
+        // 搜索按钮点击事件
+        $('#roleBtnSearch').click(function () {
+            var keyword = $('#roleEdtSearch').val();
+            table.reload('roleTable', {where: {keyword: keyword}});
+        });
+
+        // 工具条点击事件
+        table.on('tool(roleTable)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'edit') { //修改
+                showEditModel(data);
+            } else if (obj.event === 'del') { // 删除
+                doDelete(obj);
+            } else if (obj.event === 'auth') {  // 权限管理
+              showPermModel1(obj.data.role_id);
+            }
+        });
+
+        // 删除
+        function doDelete(obj) {
+            layer.confirm('确定要删除吗？', {
+                area: '600px',
+                offset: 'auto',
+                skin: 'layui-layer-admin'
+            }, function (i) {
+                layer.close(i);
+                layer.load(2);
+                selectOption.send_req('qisheng/Sysrole/del.html', {role_id: obj.data.role_id}, function(){
+                    layer.closeAll('loading');
+                    table.reload('roleTable');
+                    layer.closeAll();
+                })
+            });
+        }
+
+
+        // 角色管理
+        function showEditModel(data) {
+            admin.open({
+                type: 1,
+                area: '600px',
+                offset: 'auto',
+                title: data ? '修改角色' : '添加角色',
+                content: $('#roleForm').html(),
+                success: function () {
+                    form.val('roleForm', data);
+                    // 表单提交事件
+                    form.on('submit(roleFormSubmit)', function (d) {
+                        layer.load(2);
+                        selectOption.send_req('qisheng/Sysrole/add_or_save.html', d.field, function(data){
+                            layer.closeAll('loading');
+                            table.reload('roleTable');
+                            layer.closeAll();
+                        })
+                        return false;
+                    });
+                }
+            });
+        }
+
+        // 权限管理
+        function showPermModel1(roleId) {
+            admin.open({
+                title: '角色权限分配',
+                btn: ['保存', '取消'],
+                area: '600px',
+                // offset: 'auto',
+                content: '<ul id="treeAuth" class="ztree"></ul>',
+                success: function (layero, index) {
+                    // $(layero).children('.layui-layer-content').css({'max-height': '300px', 'overflow': 'auto'});
+                    // layer.load(2);
+                    $('#treeAuth').parent().parent().css('top',  ($(window).height() - $('#treeAuth').parent().parent().width())/2)
+                    var setting = {
+                        check: {enable: true}, 
+                        data: {simpleData: {enable: true}},
+                    };
+                    var zNodes = [], data;
+                    selectOption.send_req('qisheng/Sysmenu/auth_lst.html', {role_id: roleId}, function(data){
+                        data = data
+                        data.forEach((ele) => {
+                            var obj = {};
+                            obj.id = ele.menu_id;
+                            obj.pId = ele.parent_id;
+                            obj.name = ele.menu_name;
+                            obj.checked = ele.checked;
+                            zNodes.push(obj);
+                        })
+                    })
+                     $.fn.zTree.init($('#treeAuth'), setting, zNodes);
+                     var zTreeObj = $.fn.zTree.getZTreeObj('treeAuth')
+                     $.each(data, function(i){
+                         var node = zTreeObj.getNodeByParam('id', data[i].id)
+                         if(data[i].checked == 1){
+                            node.checked = true;
+                            zTreeObj.updatenode(node.ture)
+                         }
+                     })
+                     zTreeObj.expandAll(true)
+
+
+                    // selectOption.send_req('qisheng/Sysmenu/lst.html', {role_id: roleId}, function(data){
+                    //   $.fn.zTree.init($('#treeAuth'), setting, res);
+                    //   layer.closeAll('loading');
+                    // })
+                    // $.get('../../json/authTree.json', {
+                    //     roleId: roleId
+                    // }, function (res) {
+                    //     $.fn.zTree.init($('#treeAuth'), setting, res);
+                    //     layer.closeAll('loading');
+                    // }, 'json');
+                },
+                yes: function (index) {
+                    layer.load(2);
+                    var treeObj = $.fn.zTree.getZTreeObj('treeAuth');
+                    var nodes = treeObj.getCheckedNodes(true);
+                    var ids = new Array();
+                    for (var i = 0; i < nodes.length; i++) {
+                        ids[i] = nodes[i].id;
+                    }
+                    selectOption.send_req('qisheng/Sysmenu/add_save_auth.html', {role_id: roleId, authids:ids.toString()}, function(data){
+                        layer.closeAll('loading');
+                        table.reload('roleTable');
+                        layer.closeAll();
+                    })
+                }
+            });
+        }
+        // 权限管理
+    });
+</script>

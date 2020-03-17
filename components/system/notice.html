@@ -1,0 +1,227 @@
+<style>
+    #roleAuthTable + .layui-table-view .layui-table tbody tr:hover {
+        background-color: transparent;
+    }
+    .layui-layer-page .layui-layer-content {
+        position: relative;
+        overflow: visible !important;
+    }
+    .layui-form-select dl { max-height:100px !important; }
+</style>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-form toolbar">
+                <div class="layui-form-item">
+                    <!-- <div class="layui-inline">
+                        <label class="layui-form-label w-auto">搜索：</label>
+                        <div class="layui-input-inline">
+                            <input id="roleEdtSearch" class="layui-input" type="text" placeholder="选择采集点"/>
+                        </div>
+                    </div> -->
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <input id="keyWordtSearch" class="layui-input" type="text" placeholder="关键字查询"/>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button id="roleBtnSearch" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>查询</button>
+                        <button id="roleBtnAdd" class="layui-btn icon-btn"><i class="layui-icon">&#xe654;</i>添加</button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="layui-table" id="noticeTable" lay-filter="noticeTable"></table>
+        </div>
+    </div>
+</div>
+
+<!-- 表格操作列 -->
+<script type="text/html" id="roleTableBar">
+    <a class="layui-btn layui-btn-primary layui-btn-xs bgccc" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs bg999" lay-event="del">删除</a>
+</script>
+<!-- 表单弹窗 -->
+<script type="text/html" id="role_Form">
+    <form lay-filter="roleForm" class="layui-form model-form">
+        <input name="id" type="hidden"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="txt-impt">*</span>通知名称</label>
+            <div class="layui-input-block">
+                <input name="title" placeholder="请输入通知名称" type="text" class="layui-input"
+                        maxlength="20" required lay-verify="required"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="txt-impt">*</span>通知内容</label>
+            <div class="layui-input-block">
+                <textarea name="common" placeholder="请输入通知内容" class="layui-textarea" maxlength="200"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item mb60" id="kkkkk">
+            <label class="layui-form-label"><span class="txt-impt">*</span>状态</label>
+            <div class="layui-input-block relative">
+                <input type="checkbox" name="state" lay-skin="switch" lay-filter="kaiguan" lay-text="展示|下架">
+                <div class="absolute r0 t0">
+                        <label class="layui-form-label">选择节日</label>
+                        <div class="layui-input-block">
+                            <select name="festival_picname" id="festival_picname" lay-search>
+                                    <option value="" selected>选择节日</option>
+                                    <option value="chunjie">春节</option>
+                                    <option value="qingming">清明节</option>
+                                    <option value="laodong">劳动节</option>
+                                    <option value="duanwu">端午节</option>
+                                    <option value="zhongqiu">中秋节</option>
+                                    <option value="guoqing">国庆节</option>
+                                    <option value="christmas">圣诞节</option>
+                                    <option value="newYear">元旦</option>
+                            </select>
+                        </div>
+                </div>
+            </div>
+            
+        </div>
+        <div class="layui-form-item center">
+            <div class="layui-input-block">
+                <button class="layui-btn layui-btn-primary" type="button" ew-event="closeDialog">取消</button>
+                <button class="layui-btn" lay-filter="roleFormSubmit"  lay-submit="" type="submit">确定</button>
+            </div>
+        </div>
+    </form>
+</script>
+<!-- 接口权限 -->
+<script type="text/html" id="authModel">
+    <table class="layui-table" id="roleAuthTable" lay-filter="roleAuthTable"></table>
+</script>
+
+<!-- js部分 -->
+<script>
+    layui.use(['layer', 'form', 'table', 'util', 'admin', 'config', 'tableX', 'serverUrl'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var util = layui.util;
+        var admin = layui.admin;
+        var config = layui.config;
+        var tableX = layui.tableX;
+        var serverUrl = layui.serverUrl;
+        var selectOption = layui.selectOption;
+        $(".layui-breadcrumb").find("a").first().html("<i class='layui-icon layui-icon-refresh-3'></i>")
+        $(".layui-breadcrumb").find("a").first().attr("href","javascript:void(0);");
+        $(".layui-breadcrumb").find("a").first().attr("ew-event","refresh");
+        //渲染表格
+        table.render({
+            elem: '#noticeTable',
+            url: serverUrl + 'qisheng/Notice/lst.html',
+            // where: {
+            //     access_token: config.getToken()
+            // },
+            page: true,
+            // cellMinWidth: 100,
+            cols: [[
+                {type: 'numbers'},
+                {field: 'title', title: '通知名称'},
+                {field: 'common', title: '通知内容'},
+                {field: 'add_datetime', title: '添加时间'},
+                {field: 'state', title: '状态' ,templet: function(d){
+                      if(d.state == 1) return '展示';
+                      if(d.state == 2) return '下架';
+                    }
+                 },
+                {align: 'center', toolbar: '#roleTableBar', title: '操作', minWidth: 200}
+            ]]
+        });
+
+        // 添加按钮点击事件
+        $('#roleBtnAdd').click(function () {
+            showEditModel();
+        });
+
+        // 搜索按钮点击事件
+        $('#roleBtnSearch').click(function () {
+            var keyword = $('#keyWordtSearch').val();
+            table.reload('noticeTable', {
+                where: {
+                    where: { 
+                        'search_word': keyword
+                    } 
+                }
+            });
+        });
+
+        // 工具条点击事件
+        table.on('tool(noticeTable)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'edit') { //修改
+                showEditModel(data);
+            } else if (obj.event === 'del') { // 删除
+                doDelete(obj);
+            } else if (obj.event === 'auth') {  // 权限管理
+                showPermDialog(obj.data.roleId);
+            }
+        });
+
+        // 删除
+        function doDelete(obj) {
+            layer.confirm('确定要删除吗？', {
+                offset: '65px',
+                skin: 'layui-layer-admin'
+            }, function (i) {
+                layer.close(i);
+                layer.load(2);
+                selectOption.send_req('qisheng/Notice/del.html', {id: obj.data.id}, function(){
+                    layer.closeAll('loading');
+                    table.reload('noticeTable');
+                    layer.closeAll();
+                })
+            });
+        }
+        // 显示编辑弹窗
+        function showEditModel(data) {
+           
+            admin.open({
+                type: 1,
+                area:  ['600px', '400px'],
+                offset: 'auto',
+                title: data ? '修改通知' : '添加通知',
+                content: $('#role_Form').html(),
+                success: function () {
+                    if(data){
+                        form.val('roleForm', {
+                            "id": data.id,
+                            "title": data.title,
+                            "common":　data.common,
+                            "state": data.state == 1? true:false,
+                            "festival_picname": data.festival_picname
+                        });
+                    }else{
+                        form.val('roleForm', {
+                            "state": true
+                        }); 
+                    }
+
+                    // 表单提交事件
+                    form.on('submit(roleFormSubmit)', function (d) {
+                        var opt = $("input[name='state']").is(':checked'); 
+                        if(opt){
+                            d.field.state = 1
+                        }else{
+                            d.field.state = 2
+                        }
+                        d.field.user_id = config.getToken().user_id
+                        d.field.festival_picname = $('#festival_picname option:selected').val();
+                        layer.load(2);
+                        selectOption.send_req('qisheng/Notice/add_or_save.html', d.field, function(data){
+                            layer.closeAll('loading');
+                            table.reload('noticeTable');
+                            layer.closeAll();
+                        })
+                        return false;
+                    });
+                }
+            });
+        }
+
+    });
+</script>

@@ -1,0 +1,454 @@
+<style>
+    #roleAuthTable + .layui-table-view .layui-table tbody tr:hover {
+        background-color: transparent;
+    }
+    .layui-form-select dl { max-height:180px !important; }
+    .layui-table-body{
+        overflow: hidden!important;
+    }
+    .adjust_tip_title{
+        top: -6px;
+        right: -6px;
+    }
+</style>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-form toolbar">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <!-- <div class="layui-input-inline">
+                            <select name="city" lay-search>
+                                <option value="" selected>选择城市</option>
+                                <option value="010">太原</option>
+                                <option value="021">石家庄</option>
+                                <option value="0571">北京</option>
+                            </select>
+                        </div> -->
+                        <div class="layui-input-inline">
+                            <select name="company_id" id="company" lay-search>
+                                <option value="" selected>选择企业</option>
+                            </select>
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="text" class="layui-input" id="test17" placeholder="选择日期范围">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button id="roleBtnSearch" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>查询</button>
+                        <button id="roleBtnAdd" class="layui-btn icon-btn"><i class="layui-icon">&#xe654;</i>添加</button>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-row">
+                <div class="layui-col-xs6 layui-col-sm6 layui-col-md12 layui-col-lg12">
+                    <table class="layui-table" id="roleTable1" lay-filter="roleTable1"></table>
+                </div>
+            </div>
+            <div class="layui-row mt30 hidden" id="mainParent">
+                <div id="main" style="width: 80%; height:400px;"  class="fl"></div>
+                <div style="width:20%; height:400px;" class="fl" id="dianliang">
+                    <div class="h50 mt50 lh30">
+                        <span>代理电量</span>
+                        <span class="bgcf40 h30 whiteoc inlineB w100 alignR pr20" id="dldl"></span>
+                    </div>
+                    <div class="h50 mt50 lh30">
+                        <span>实际用电量</span>
+                        <span class="bg999 h30 whiteoc inlineB w100 alignR pr20" id="sjydl"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    
+    <!-- 表格状态列 -->
+    <script type="text/html" id="authState">
+        <input type="checkbox" checked="" name="open" lay-skin="switch" lay-filter="switchTest" lay-text="正常|关闭">
+    </script>
+    <!-- 表格操作列 -->
+    <script type="text/html" id="roleTableBar">
+        <a class="layui-btn layui-btn-primary layui-btn-xs bgeee" lay-event="edit">修改</a>
+        <!-- <a class="layui-btn layui-btn-danger layui-btn-xs bg999" data-type="auto" lay-event="setting">电费配置</a> -->
+        <a class="layui-btn layui-btn-danger layui-btn-xs bg999" lay-event="del">删除</a>
+    </script>
+    <!-- 表单弹窗 -->
+    <script type="text/html" id="roleForm">
+        <form lay-filter="roleForm" class="layui-form model-form">
+            <input name="id" type="hidden"/>
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="txt-impt">*</span>企业名称</label>
+                <div class="layui-input-block">
+                    <select name="company_id" id="company1" lay-search>
+                        <option value="" selected>选择企业</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="txt-impt">*</span>售电月份</label>
+                <div class="layui-input-block">
+                    <input name="buy_date" type="text" class="layui-input" id="test5" placeholder="选择售电月份" placeholder="yyyy-MM">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="txt-impt">*</span>购电量</label>
+                <div class="layui-input-block relative">
+                    <input name="buy_electricity" placeholder="请输入购电量" type="number" class="layui-input"
+                            maxlength="20" lay-verify="required" required/>
+                    <span class="absolute r20 t10">KW·h</span>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="txt-impt">*</span>标杆电费</label>
+                <div class="layui-input-block relative">
+                    <input name="china_stant_power_price" placeholder="请输入标杆电费" type="number" class="layui-input"
+                            maxlength="20" lay-verify="required" required/>
+                    <span class="absolute r20 t10">元</span>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="txt-impt">*</span>启申标杆电费</label>
+                <div class="layui-input-block relative">
+                    <input name="qishen_stant_power_price" placeholder="请输入启申标杆电费" type="number" class="layui-input"
+                            maxlength="20" lay-verify="required" required/>
+                    <span class="absolute r20 t10">元</span>
+                </div>
+            </div>
+            <div class="layui-form-item hidden" id="sjcjdl">
+                <label class="layui-form-label">实际采集用电量</label>
+                <div class="layui-input-block">
+                    <input name="get_use_electricity" disabled placeholder="请输入实际采集用电量" type="number" class="layui-input"
+                            maxlength="20"  />
+                </div>
+            </div>
+            <div class="layui-form-item relative">
+                <label class="layui-form-label">用电调整值</label>
+                    <div class="layui-inline">
+                        <label class="layui-form-label wb20 alignL plr0 fs10">+</label>
+                        <div class="layui-input-block ml20 wb100p relative">
+                                <input name="use_electricity_adjust_1" type="number" class="layui-input"
+                                maxlength="20" />
+                                <span class="absolute r20 t10">KW·h</span>
+                        </div>
+                    </div>
+                    <div class="layui-inline ml10">
+                        <label class="layui-form-label wb20 alignL plr0 fs10">-</label>
+                        <div class="layui-input-block ml20 wb100p relative">
+                                <input name="use_electricity_adjust_2" type="number" class="layui-input"
+                                maxlength="20" />
+                                <span class="absolute r20 t10">KW·h</span>
+                        </div>
+                    </div>
+                <!-- <div class="layui-input-block">
+                    <span>+</span>
+                    <input name="use_electricity_adjust" placeholder="请输入用电调整值" type="text" class="layui-input-inline"
+                            maxlength="20" lay-verify="required" required/>
+                    <span>-</span>
+                    <input name="use_electricity_adjust" placeholder="请输入用电调整值" type="text" class="layui-input-inline"
+                    maxlength="20" lay-verify="required" required/>
+                </div> -->
+                <i class="layui-icon layui-icon-tips pointer adjust_tip padd10"></i>
+                <!-- <div class="absolute wb180p fs6 adjust_tip_title">调整电量：实际采集电量不准确时候， 总电量=实际采集电量+调整电量</div> -->
+            </div>
+            <div class="layui-form-item text-right">
+                <button class="layui-btn layui-btn-primary" type="button" ew-event="closeDialog">取消</button>
+                <button class="layui-btn" lay-filter="roleFormSubmit" lay-submit>保存</button>
+            </div>
+        </form>
+    </script>
+    <!-- 接口权限 -->
+    <script type="text/html" id="authModel">
+        <table class="layui-table" id="roleAuthTable" lay-filter="roleAuthTable"></table>
+    </script>
+    <!-- 表格状态列 -->
+    <!-- <script type="text/html" id="authState">
+        <input type="checkbox" lay-filter="authState" value="{{d.authority}}" lay-skin="switch"
+                lay-text="ON|OFF" {{d.checked==1?'checked':''}}/>
+    </script> -->
+    
+    <!-- js部分 -->
+    <script>
+        layui.use(['layer', 'form', 'table', 'util', 'admin', 'config', 'tableX', 'laydate','element'], function () {
+            var $ = layui.jquery;
+            var layer = layui.layer;
+            var form = layui.form;
+            form.render();
+            var table = layui.table;
+            var util = layui.util;
+            var admin = layui.admin;
+            var config = layui.config;
+            var tableX = layui.tableX;
+            var laydate = layui.laydate;
+            var element = layui.element;
+            var serverUrl = layui.serverUrl;
+            var selectOption = layui.selectOption;
+            $(".layui-breadcrumb").find("a").first().html("<i class='layui-icon layui-icon-refresh-3'></i>")
+            $(".layui-breadcrumb").find("a").first().attr("href","javascript:void(0);");
+            $(".layui-breadcrumb").find("a").first().attr("ew-event","refresh");
+
+         
+            selectOption.send_req('qisheng/Company/lst.html', {}, function(data){
+                var hyArr = [];
+                const s = new Set();
+                data.data.forEach((ele, index) => {
+                    hyArr.push({id: ele.id, categoryName: ele.name})
+                })
+                hyArr.forEach(x => s.add(x));
+                selectOption.showCategory(hyArr, 1,'#company')
+                form.render('select');
+            })
+            // 时间选择
+            laydate.render({
+                elem: '#test17'
+                ,type: 'month'
+                ,range: '-'
+                ,format: 'yyyy-MM'
+            });
+    
+            //渲染表格
+            table.render({
+                elem: '#roleTable1',
+                // skin: 'line',
+                url: serverUrl + 'qisheng/Powerbuy/lst.html',
+                // where: {
+                //     access_token: config.getToken()
+                // },
+                page: true,
+                // cellMinWidth: 100,
+                cols: [[
+                    {type: 'numbers'},
+                    {field: 'company_name', title: '企业名称'},
+                    {field: 'buy_electricity', title: '购电量(KW·h)'},
+                    {field: 'get_use_electricity', title: '实际采集用电量(KW·h)'},
+                    {field: 'use_electricity_adjust', title: '用电调整值'},
+                    {title: '售电月份',templet:function(d){
+                    		return d.buy_date.substring(0,7);
+                    	}
+                    },
+                    {field: 'create_time', title: '添加时间'},
+                    {align: 'center', toolbar: '#roleTableBar', title: '操作', minWidth: 200}
+                ]]
+            });
+    
+            // 添加按钮点击事件
+            $('#roleBtnAdd').click(function () {
+                showEditModel();
+            });
+
+             // 工具条点击事件
+             table.on('tool(roleTable1)', function (obj) {
+                var data = obj.data;
+                if (obj.event === 'edit') { //修改
+                    showEditModel(data);
+                } else if (obj.event === 'del') { // 删除
+                    doDelete(obj);
+                } else if (obj.event === 'setting') {  // 权限管理
+                    showEditModel1(data);
+                }
+            });
+            //点击某一行
+            table.on('row(roleTable1)', function(obj){
+                $('#dianliang').removeClass('hidden');
+                $('#mainParent').removeClass('hidden');
+                var a1 = obj.data.buy_electricity;
+                var a2 = obj.data.get_use_electricity;
+
+               
+                selectOption.send_req('qisheng/Powerbuy/chart_data.html', {company_id: obj.data.company_id}, function(data){
+                    var data11 = [];
+                    var data22 = [];
+                    var data33 = [];
+                     $('#dldl').html(data.buy_count+ ' MW·h')
+                	 $('#sjydl').html(data.use_count + ' MW·h')
+                    
+                    data.lst.forEach((ele) => {
+                        data11.push(ele.buy_date.substring(0,7));
+                        data22.push(ele.buy_electricity);
+                        data33.push(ele.get_use_electricity);
+                    })
+                    layer.closeAll('loading');
+                    var industry =  data.lst[0].company_name
+                    data11 = data11.reverse();
+                    myEcharts(data22,data33,data11,industry);
+                })
+            });
+    
+            // 搜索按钮点击事件
+            $('#roleBtnSearch').click(function () {
+                var keyword = $('#company').val();
+                var date = $('#test17').val();
+                if(date){
+                	date.replace(' - ',',');
+                }
+                
+                table.reload('roleTable1', {
+                    where: {
+                        where: { 
+                            'company_id': keyword,
+                            'date_area': date
+                        } 
+                    }
+                });
+            });
+    
+            //图表
+            function myEcharts(data1,data2,data3,industry){
+                 // 基于准备好的dom，初始化echarts实例
+                 var myChart = echarts.init(document.getElementById('main'));
+        
+                // 指定图表的配置项和数据
+                option = {
+                    title: {
+                        text: industry + '购电和用电历史走势图',
+                        left: '20',
+                        y: '10'
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        formatter: "{a}:{c} KW·h"
+                    },
+                    legend: {
+                        data:['代理电量','实际用电量']
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '50',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    toolbox: {
+                        feature: {
+                            saveAsImage: {}
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        data: data3
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [
+                        {
+                            name:'代理电量',
+                            type:'line',
+                            stack: '总量',
+                            data: data1
+                        },
+                        {
+                            name:'实际用电量',
+                            type:'line',
+                            stack: '总量',
+                            data: data2
+                            // data:[220, 182, 191, 234, 290, 330, 310]
+                        }
+                    ]
+                };
+
+
+                // 使用刚指定的配置项和数据显示图表。
+                myChart.setOption(option);
+            }
+
+            // 删除
+            function doDelete(obj) {
+                layer.confirm('确定要删除吗？', {
+                    offset: 'auto',
+                    skin: 'layui-layer-admin'
+                }, function (i) {
+                    layer.close(i);
+                    layer.load(2);
+                    selectOption.send_req('qisheng/Powerbuy/del.html', {id: obj.data.id}, function(){
+                        layer.closeAll('loading');
+                        table.reload('roleTable1');
+                        layer.closeAll();
+                    })
+                });
+            }
+    
+            // 显示编辑弹窗
+            function showEditModel(data) {
+                
+                admin.open({
+                    type: 1,
+                    area: '600px',
+                    offset: 'auto',
+                    title: data ? '修改' : '添加',
+                    content: $('#roleForm').html(),
+                    success: function () {
+                        selectOption.send_req('qisheng/Company/lst.html', {}, function(data){
+                            var hyArr = [];
+                            const s = new Set();
+                            data.data.forEach((ele, index) => {
+                                hyArr.push({id: ele.id, categoryName: ele.name})
+                            })
+                            hyArr.forEach(x => s.add(x));
+                            selectOption.showCategory(hyArr, 1,'#company1')
+                            form.render('select');
+                        })
+                        if(data){
+                            $('#sjcjdl').removeClass('hidden').addClass('show')
+                            $("#company1").val(data.company_id);
+                            if(data.use_electricity_adjust >= 0){
+                                $("input[name='use_electricity_adjust_1']").val(data.use_electricity_adjust)
+                                $("input[name='use_electricity_adjust_2']").val('')
+                            }else{
+                                $("input[name='use_electricity_adjust_2']").val(Math.abs(data.use_electricity_adjust))
+                                $("input[name='use_electricity_adjust_1']").val('')
+                            }
+                        }else{
+                            $('#sjcjdl').removeClass('show').addClass('hidden')
+                        }
+                        
+                        laydate.render({
+                            elem: '#test5'
+                            ,type: 'month'
+                            ,format: 'yyyy-MM'
+                        });
+                        form.val('roleForm', data);
+                        // 表单提交事件
+                        form.on('submit(roleFormSubmit)', function (d) {
+                            d.field.company_name = $("#company1 option:selected").text();
+                            layer.load(2);
+                            delete d.field.use_electricity_adjust_1
+                            delete d.field.use_electricity_adjust_2
+                            d.field.use_electricity_adjust = $("input[name='use_electricity_adjust_1']").val() - $("input[name='use_electricity_adjust_2']").val()
+                            selectOption.send_req('qisheng/Powerbuy/add_or_save.html', d.field, function(data){
+                                layer.closeAll('loading');
+                                table.reload('roleTable1');
+                                layer.closeAll();
+                            })
+                            return false;
+                        });
+                    }
+                });
+
+
+
+            $('.adjust_tip').click(function() {
+                // $(".adjust_tip_title").fadeIn(1000);
+                layer.tips('调整电量：实际采集电量不准确时候， 总电量=实际采集电量+调整电量');
+            });   
+
+            }
+            function showEditModel1(data) {
+                layer.open({
+                    type: 2 //此处以iframe举例
+                    ,title: '当你选择该窗体时，即会在最顶端'
+                    ,area: ['50%','500px']
+                    ,shade: 0
+                    ,maxmin: true
+                    ,content: 'NewBox.html?id=' + data.id
+                    ,btn: ['确定']
+                    ,yes: function(){
+                        layer.closeAll();                        
+                    }
+                    ,zIndex: layer.zIndex //重点1
+                    ,success: function(layero){
+                        layer.setTop(layero); //重点2
+                    }
+                });
+            }
+        });
+    </script>

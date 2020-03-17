@@ -1,0 +1,426 @@
+<style>
+    .layui-badge-rim + .layui-badge-rim {
+        margin-left: 5px;
+    }
+     /* layUI */
+     .layui-form-onswitch {
+        border-color: #0d7871!important;
+        background-color: #0d7871!important;
+    }
+    .layui-form-switch{
+        border: 1px solid #0d7871!important;
+        background-color: #0d7871!important;
+    }
+    .layui-form-switch em{
+        color: #fff!important;
+    }
+    .layui-form-switch i{
+        background-color: #fff;
+    }
+    .layui-form-select dl { max-height:120px !important; }
+    /* layUI */
+    .layui-form-onswitch {
+        border-color: #0d7871!important;
+        background-color: #0d7871!important;
+    }
+    .layui-form-switch{
+        border: 1px solid #0d7871!important;
+        background-color: #0d7871!important;
+    }
+    .layui-form-switch em{
+        color: #fff!important;
+    }
+    .layui-form-switch i{
+        background-color: #fff;
+    }
+    
+    /* .layui-form-select dl { max-height:100px !important; } */
+</style>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-form toolbar">
+                <div class="layui-form-item">
+                    <!-- <div class="layui-inline">
+                        <select id="userSltKey">
+                            <option value="">搜索条件</option>
+                            <option value="username">账号</option>
+                            <option value="nick_name">用户名</option>
+                            <option value="sex">性别</option>
+                            <option value="phone">手机号</option>
+                        </select>
+                    </div> -->
+                    <div class="layui-inline">
+                        <input id="userEdtSearch" class="layui-input" type="text" placeholder="输入关键字"/>
+                    </div>
+                    <div class="layui-inline">
+                        <button id="userBtnSearch" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>查询
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="layui-table" id="userTable" lay-filter="userTable"></table>
+        </div>
+    </div>
+    <!-- <div>
+        <ul>
+            <li>用户名</li>
+        </ul>
+    </div> -->
+    
+</div>
+
+<!-- 表格操作列 -->
+<script type="text/html" id="userTableBar">
+    <!-- <a class="layui-btn layui-btn-primary layui-btn-xs bgeee" lay-event="edit">修改</a> -->
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="reset">重置密码</a>
+    <a class="layui-btn layui-btn-primary layui-btn-xs shenhe" lay-event="review">审核</a>
+</script>
+<!-- 表格状态列 -->
+<script type="text/html" id="userTbaleState">
+    <input type="checkbox" lay-filter="ckState" lay-skin="switch" lay-text="正常|锁定"
+           value="{{d.userId}}" {{d.state==0?'checked':''}}/>
+</script>
+<!-- 表单弹窗 -->
+<script type="text/html" id="userForm">
+    <form lay-filter="userForm" class="layui-form model-form">
+        <input name="user_id" type="hidden"/>
+        <!-- <div class="layui-form-item">
+            <label class="layui-form-label">账号</label>
+            <div class="layui-input-block">
+                <input name="username" placeholder="请输入账号" type="text" class="layui-input"
+                       maxlength="20" lay-verify="required" required/>
+            </div>
+        </div> -->
+        <div class="layui-form-item">
+            
+            <label class="layui-form-label"><span class="txt-impt">*</span>用户名</label>
+            <div class="layui-input-block">
+                <input name="username" placeholder="请输入用户名" type="text" class="layui-input"
+                       maxlength="20" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="txt-impt">*</span>昵称</label>
+            <div class="layui-input-block">
+                <input name="nick_name" placeholder="请输入用户名" type="text" class="layui-input"
+                       maxlength="20" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="txt-impt">*</span>性别</label>
+            <div class="layui-input-block">
+                <input type="radio" name="sex" value="男" title="男" checked/>
+                <input type="radio" name="sex" value="女" title="女"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="txt-impt">*</span>手机号</label>
+            <div class="layui-input-block">
+                <input name="phone" placeholder="请输入手机号" type="text" class="layui-input"
+                       lay-verify="required|phone" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="txt-impt">*</span>真实姓名</label>
+            <div class="layui-input-block">
+                <input name="true_name" placeholder="请输入用户名" type="text" class="layui-input"
+                       maxlength="20" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="txt-impt">*</span>公司名称</label>
+            <div class="layui-input-block">
+                <input name="company_name" placeholder="请输入用户名" type="text" class="layui-input"
+                       maxlength="20" lay-verify="required" required/>
+            </div>
+        </div>
+        <!-- <div class="layui-form-item">
+            <label class="layui-form-label">角色</label>
+            <div class="layui-input-block">
+                <select name="roleId" xm-select="selRole" xm-select-skin="default" lay-verify="required"></select>
+            </div>
+        </div> -->
+        <div class="layui-form-item text-right">
+            <button class="layui-btn layui-btn-primary" type="button" ew-event="closeDialog">取消</button>
+            <button class="layui-btn" lay-filter="userFormSubmit" lay-submit>保存</button>
+        </div>
+    </form>
+</script>
+<script type="text/html" id="roleForm">
+    <form lay-filter="roleForm" class="layui-form model-form">
+        <input name="user_id" type="hidden"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label">审核状态</label>
+            <div class="layui-input-block">
+                <select name="result" id="result" lay-search>
+                    <option value="" selected>选择</option>
+                    <option value="3">审核通过</option>
+                    <option value="4">审核不通过</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">备注</label>
+            <div class="layui-input-block">
+                <textarea name="common" placeholder="请输入备注" class="layui-textarea" maxlength="200"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item text-right">
+            <button class="layui-btn layui-btn-primary" type="button" ew-event="closeDialog">取消</button>
+            <button class="layui-btn" lay-filter="roleFormSubmit" lay-submit>保存</button>
+        </div>
+    </form>
+</script>
+<script>
+    layui.use(['layer', 'form', 'table', 'util', 'formSelects', 'admin', 'config','serverUrl'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var table1 = layui.table;
+        var util = layui.util;
+        var formSelects = layui.formSelects;
+        var admin = layui.admin;
+        var config = layui.config;
+        var mRoles = [];  // 全部角色
+        var serverUrl = layui.serverUrl
+        var selectOption = layui.selectOption;
+        $(".layui-breadcrumb").find("a").first().html("<i class='layui-icon layui-icon-refresh-3'></i>")
+            $(".layui-breadcrumb").find("a").first().attr("href","javascript:void(0);");
+            $(".layui-breadcrumb").find("a").first().attr("ew-event","refresh");
+
+        form.render('select');
+
+
+        // 渲染表格
+        table.render({
+            elem: '#userTable',
+            url: serverUrl+'qisheng/User/lst.html',
+            where: {
+                where: { 
+                    'user_type': 2
+                } 
+            },
+            page: true,
+            cellMinWidth: 100,
+            cols: [[
+                {type: 'numbers'},
+                {field: 'true_name', title: '账号'},
+                {field: 'nick_name', title: '用户名'},
+                {field: 'phone', title: '手机号'},
+                {field: 'sex', title: '性别'},
+                {field: 'service_openid', title: '是否绑定服务号' ,templet: function(d){
+                        if(d.service_openid == null || d.service_openid == '') return '否';
+                        if(d.service_openid != null && d.service_openid != '') return '是';
+                    }
+                },
+                {
+                    templet: function (d) {
+                        var str = '';
+                        if(d.roles){
+                            str += ('<span class="layui-badge-rim">' + d.roles + '</span>');
+                        }else{
+                            str += ('<span class="layui-badge-rim">' + '游客' + '</span>');
+                        }
+                        
+                        return str;
+                    }, title: '角色'
+                },
+                // {
+                //     templet: function (d) {
+                //         console.log(d)
+                //         return util.toDateString(d.create_time);
+                //     }, title: '创建时间'
+                // },
+                {field: 'create_time', title: '创建时间'},
+                {field: 'state', title: '状态' ,templet: function(d){
+                      if(d.state == 1) return '冻结';
+                      if(d.state == 2) return '待审核';
+                      if(d.state == 3) return '审核通过';
+                      if(d.state == 4) return '审核不通过';
+                    }
+                 },
+                {align: 'center', toolbar: '#userTableBar', title: '操作', unresize: true, width: 240},
+                
+            ]],
+            // done:function(){
+            //     $(window).resize(function(){
+            //         $('.layui-body-header').width($('.layui-body-header').next().width() - 40)
+            //     })
+            // }
+        });
+
+        // 搜索按钮点击事件
+        $('#userBtnSearch').click(function () {
+            var key = $('#userSltKey').val();
+            var value = $('#userEdtSearch').val();
+            table.reload('userTable', {where: {searchKey: key, searchValue: value}});
+        });
+
+        // 添加按钮点击事件
+        $('#userBtnAdd').click(function () {
+            showEditModel();
+        });
+
+        // 工具条点击事件
+        table.on('tool(userTable)', function (obj) {
+            var data = obj.data;
+            var layEvent = obj.event;
+            if (layEvent === 'reset') { // 重置密码
+                layer.confirm('确定重置此用户的密码吗？<br><span style="color: red;">（重置密码应为:123456）</span>', {
+                    skin: 'layui-layer-admin'
+                }, function (i) {
+                    layer.load(2);
+                    selectOption.send_req('qisheng/User/reset_password', {user_id: data.user_id}, function(data){
+                        layer.closeAll('loading');
+                        layer.closeAll();
+                    })
+                });
+            } else if (layEvent === 'edit') { // 修改
+                showEditModel(data);
+            }
+            else if (layEvent === 'review') { // shenhe
+                if(data.state == '3' || data.state == '4'){
+                    showEditModel22(data);                        
+                }else{
+                    showEditModel11(data);
+                }
+            }
+        });
+
+        // 修改user状态
+        // form.on('switch(ckState)', function (obj) {
+        //     layer.load(2);
+        //     admin.req('user/state', {
+        //         userId: obj.elem.value,
+        //         state: obj.elem.checked ? 0 : 1
+        //     }, function (data) {
+        //         layer.closeAll('loading');
+        //         if (data.code == 200) {
+        //             layer.msg(data.msg, {icon: 1});
+        //         } else {
+        //             layer.msg(data.msg, {icon: 2});
+        //             $(obj.elem).prop('checked', !obj.elem.checked);
+        //             form.render('checkbox');
+        //         }
+        //     }, 'PUT');
+        // });
+
+        // 显示表单弹窗
+        function showEditModel(data) {
+            admin.open({
+                type: 1,
+                area: '500px',
+                offset: '65px',
+                title: data ? '修改用户' : '添加用户',
+                content: $('#userForm').html(),
+                success: function (layero, index) {
+                    $(layero).children('.layui-layer-content').css('overflow', 'visible');
+                    form.render('radio');
+                    // 渲染角色下拉框
+                    // var roleSelData = new Array();
+                    // for (var i = 0; i < mRoles.length; i++) {
+                    //     roleSelData.push({name: mRoles[i].roleName, value: mRoles[i].roleId});
+                    // }
+                    // formSelects.data('selRole', 'local', {arr: roleSelData});
+
+                    // 回显user数据
+                    if (data) {
+                        form.val('userForm', data);
+                        // var rds = new Array();
+                        // for (var i = 0; i < data.roles.length; i++) {
+                        //     rds.push(data.roles[i].roleId);
+                        // }
+                        // formSelects.value('selRole', rds);  // 回显多选框
+                    }
+                    // 表单提交事件
+                    form.on('submit(userFormSubmit)', function (d) {
+                        // d.field.roleIds = formSelects.value('selRole', 'valStr');
+                        layer.load(2);
+                        // d.field.id = d.field.user_id
+                        $.post(serverUrl + 'qisheng/User/detail.html', d.field, function (res) {
+                            layer.closeAll('loading');
+                            if (res.code == 200) {
+                                layer.msg(res.msg, {icon: 1});
+                                layer.closeAll('page');
+                                table.reload('userTable');
+                            } else {
+                                layer.msg(res.msg, {icon: 2});
+                            }
+                        }, 'json');
+                        // admin.req(serverUrl + 'qisheng/User/detail.html', d.field, function (res) {
+                        //     layer.closeAll('loading');
+                        //     if (res.code == 200) {
+                        //         layer.msg(res.msg, {icon: 1});
+                        //         layer.closeAll('page');
+                        //         table.reload('userTable');
+                        //     } else {
+                        //         layer.msg(res.msg, {icon: 2});
+                        //     }
+                        // }, data ? 'PUT' : 'POST');
+                        return false;
+                    });
+                }
+            });
+        }
+
+        // 获取所有角色
+        // layer.load(2);
+        // admin.req('role', {}, function (res) {
+        //     layer.closeAll('loading');
+        //     if (0 == res.code) {
+        //         mRoles = res.data;
+        //     } else {
+        //         //layer.msg('获取角色失败', {icon: 2});
+        //     }
+        // }, 'GET');
+        function showEditModel11(data) {
+            admin.open({
+                type: 1,
+                area: '500px',
+                offset: '65px',
+                title: '审核',
+                content: $('#roleForm').html(),
+                success: function () {
+                    if(data){
+                        $("#result").val(data.state);
+                    }
+                    
+                    form.val('roleForm', data);
+                    form.on('submit(roleFormSubmit)', function (d) {
+                        layer.load(2);
+                        d.field.examine_user_id = config.getToken().user_id
+                        d.field.examine_user_name = config.getToken().true_name
+                        selectOption.send_req('qisheng/User/user_examine.html', d.field, function(data){
+                            layer.closeAll('loading');
+                            table.reload('userTable');
+                            layer.closeAll();
+                        })
+                        return false;
+                    });
+                }
+            })
+        }
+        function showEditModel22(data) {
+            layer.open({
+                type: 2 //此处以iframe举例
+                ,title: '审核记录'
+                ,area: ['50%','500px']
+                ,shade: 0
+                ,maxmin: true
+                ,content: 'record.html?id=' + data.user_id
+                ,btn: ['确定']
+                ,yes: function(){
+                    layer.closeAll();                        
+                }
+                ,zIndex: layer.zIndex //重点1
+                ,success: function(layero){
+                    layer.setTop(layero); //重点2
+                }
+            });
+        }
+
+    });
+</script>

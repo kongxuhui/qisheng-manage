@@ -1,0 +1,243 @@
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-form toolbar">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <div class="layui-input-inline mr0">
+                            <input id="menuEdtSearch" class="layui-input" type="text" placeholder="输入关键字"/>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button id="menuBtnSearch" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>查询
+                        </button>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn" id="btn-expand">全部展开</button>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn" id="btn-fold">全部折叠</button>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn" id="btn-refresh">刷新表格</button>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn" id="btn-add">添加</button>
+                    </div>
+                </div>
+            </div>
+
+            <table id="table1" class="layui-table" lay-filter="table1"></table>
+        </div>
+    </div>
+</div>
+
+<!-- 操作列 -->
+<script type="text/html" id="oper-col">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<!-- 表单弹窗 -->
+<script type="text/html" id="menuForm">
+    <form lay-filter="menuForm" class="layui-form model-form">
+        <input name="menu_id" type="hidden"/>
+        <input name="authority_id" type="hidden"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="txt-impt">*</span>上级菜单</label>
+            <div class="layui-input-block">
+                <select name="parent_id" lay-verify="required" id="parent_id" lay-search>
+                    <option value="" selected>选择上级菜单</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="txt-impt">*</span>权限名称</label>
+            <div class="layui-input-block">
+                <input name="menu_name" placeholder="请输入权限名称" type="text" class="layui-input"
+                       maxlength="20" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="txt-impt">*</span>权限类型</label>
+            <div class="layui-input-block">
+                <input type="radio" name="isMenu" value="2" title="菜单" checked>
+                <input type="radio" name="isMenu" value="1" title="按钮">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="txt-impt">*</span>菜单URL</label>
+            <div class="layui-input-block">
+                <input lay-verify="required" name="menu_url" placeholder="请输入菜单url" type="text" class="layui-input"
+                       maxlength="200"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="txt-impt">*</span>菜单图标</label>
+            <div class="layui-input-block">
+                <input name="menu_icon" placeholder="请输入菜单图标" lay-verify="required" type="text" class="layui-input"
+                       maxlength="80"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="txt-impt">*</span>权限标识</label>
+            <div class="layui-input-block">
+                <input name="authority" placeholder="请输入权限标识" type="text" class="layui-input"
+                       maxlength="100"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="txt-impt">*</span>排序号</label>
+            <div class="layui-input-block">
+                <input name="sort_number" placeholder="请输入排序号" type="number" class="layui-input"
+                       max="100" lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item text-right">
+            <button class="layui-btn layui-btn-primary" type="button" ew-event="closeDialog">取消</button>
+            <button class="layui-btn" lay-filter="menuFormSubmit" lay-submit>保存</button>
+        </div>
+    </form>
+</script>
+<!-- js部分 -->
+<script>
+    layui.use(['layer', 'form', 'table', 'util', 'admin', 'config', 'treetable','serverUrl'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        form.render();
+        var table = layui.table;
+        var util = layui.util;
+        var admin = layui.admin;
+        var config = layui.config;
+        var treetable = layui.treetable;
+        var mMenus = [];  // 全部菜单
+        var serverUrl = layui.serverUrl;
+        var selectOption = layui.selectOption;
+        $(".layui-breadcrumb").find("a").first().html("<i class='layui-icon layui-icon-refresh-3'></i>")
+            $(".layui-breadcrumb").find("a").first().attr("href","javascript:void(0);");
+            $(".layui-breadcrumb").find("a").first().attr("ew-event","refresh");
+
+
+        // 渲染表格
+        var renderTable = function () {
+            // layer.load(2);
+            treetable.render({
+                treeColIndex: 1,
+                treeSpid: -1,
+                treeIdName: 'menu_id',
+                treePidName: 'parent_id',
+                treeDefaultClose: false,
+                treeLinkage: false,
+                elem: '#table1',
+                url: serverUrl + 'qisheng/Sysmenu/lst.html',
+                page: false,
+                cols: [[
+                    {type: 'numbers'},
+                    {field: 'menu_name', title: '权限名称'},
+                    {field: 'menu_url', title: '菜单url'},
+                    {field: 'authority', title: '权限标识'},
+                    {field: 'sort_number', title: '排序号'},
+                    {field: 'ismenu', title: '类型' ,templet: function(d){
+                      if(d.ismenu == 2) return '菜单';
+                      if(d.ismenu == 1) return '按钮';
+                    }
+                 },
+                    {templet: '#oper-col', title: '操作'}
+                ]],
+                done: function () {
+                    layer.closeAll('loading');
+                }
+            });
+        };
+
+        $('#btn-expand').click(function () {
+            treetable.expandAll('#table1');
+        });
+
+        $('#btn-fold').click(function () {
+            treetable.foldAll('#table1');
+        });
+
+        $('#btn-refresh').click(function () {
+            renderTable();
+        });
+        renderTable();
+
+        // 搜索按钮点击事件
+        $('#menuBtnSearch').click(function () {
+            var keyword = $('#menuEdtSearch').val();
+            table.reload('menuTable', {where: {keyword: keyword}});
+        });
+
+        // 添加按钮点击事件
+        $('#btn-add').click(function () {
+            showEditModel();
+        });
+        //监听工具条
+        table.on('tool(table1)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'edit') { //修改
+                showEditModel(data);
+            } else if (obj.event === 'del') { // 删除
+                doDelete(obj);
+            }
+        });
+
+        // 删除
+        function doDelete(obj) {
+            layer.confirm('确定要删除吗？', {
+                offset: '65px',
+                skin: 'layui-layer-admin'
+            }, function (i) {
+                layer.close(i);
+                layer.load(2);
+                selectOption.send_req('qisheng/Sysmenu/del.html', {menu_id: obj.data.menu_id,authority_id:obj.authority_id}, function(){
+                    layer.closeAll('loading');
+                    table.reload('roleTable');
+                    layer.closeAll();
+                })
+            });
+        }
+        // 显示编辑弹窗
+        function showEditModel(menu) {
+            admin.open({
+                type: 1,
+                area: '360px',
+                offset: '65px',
+                title: (menu ? '修改' : '添加') + '菜单',
+                content: $('#menuForm').html(),
+                success: function () {
+                    selectOption.send_req('qisheng/Sysmenu/lst.html', {}, function(data){
+                        var cityArr = [];
+                        const s = new Set();
+                        data.data.forEach((ele, index) => {
+                            cityArr.push({id: ele.menu_id, categoryName: ele.menu_name})
+                        })
+                        cityArr.forEach(x => s.add(x));
+                        selectOption.showCategory(cityArr, 1,'#parent_id');
+                        form.render('select');
+                    })
+                    // form.render('select');
+
+                    if(menu){
+                        $("#parent_id").val(menu.parent_id);
+                    }
+                    form.val('menuForm', menu);
+                    // 表单提交事件
+                    form.on('submit(menuFormSubmit)', function (d) {
+                        d.field.parent_name = $("#parent_id option:selected").text();
+                        layer.load(2);
+                        selectOption.send_req('qisheng/Sysmenu/add_or_save.html', d.field, function(data){
+                            layer.closeAll('loading');
+                            renderTable();
+                            layer.closeAll();
+                        })
+                        return false;
+                    });
+                }
+            });
+        }
+
+    });
+</script>

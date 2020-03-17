@@ -1,0 +1,340 @@
+<style>
+    #roleAuthTable + .layui-table-view .layui-table tbody tr:hover {
+        background-color: transparent;
+    }
+</style>
+    <div class="layui-fluid">
+        <div class="layui-card">
+            <div class="layui-card-body">
+                <div class="layui-form toolbar">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label w-auto">超标企业排名</label>
+                            <div class="layui-input-inline">
+                                <button id="cbdlpx" class="layui-btn icon-btn br10">按超标电量排序</button>
+                            </div>
+                            <div class="layui-input-inline">
+                                <button id="cbbfbpx" class="layui-btn icon-btn br10">按超标百分比排序</button>
+                            </div>
+                        </div>
+                        <!-- <div class="layui-inline">
+                            <button id="roleBtnSearch" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>搜索</button>
+                        </div> -->
+                    </div>
+                </div>
+                <div class="layui-row">
+                    <div class="layui-col-xs12 layui-col-sm12 layui-col-md12 layui-col-lg12">
+                        <table class="layui-table" id="roleTable" lay-filter="roleTable"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-row layui-col-space20 mt10">
+            <div class="layui-col-xs6 layui-col-sm6 layui-col-md6 layui-col-lg6">
+                <div id="main1" style="width: 100%;height:400px;" class="bgfff"></div>
+            </div>
+            <div class="layui-col-xs6 layui-col-sm6 layui-col-md6 layui-col-lg6">
+                <div id="main2" style="width: 100%;height:400px;" class="bgfff"></div>
+            </div>
+        </div>
+    </div>
+        <!-- 接口权限 -->
+        <script type="text/html" id="authModel">
+            <table class="layui-table" id="roleAuthTable" lay-filter="roleAuthTable"></table>
+        </script>
+        <!-- js部分 -->
+        <script>
+            layui.use(['layer', 'form', 'table', 'util', 'admin', 'config', 'tableX', 'laydate','element'], function () {
+                var $ = layui.jquery;
+                var layer = layui.layer;
+                var form = layui.form;
+                form.render();
+                var table = layui.table;
+                var util = layui.util;
+                var admin = layui.admin;
+                var config = layui.config;
+                var tableX = layui.tableX;
+                var laydate = layui.laydate;
+                var element = layui.element;
+                var serverUrl = layui.serverUrl;
+                var selectOption = layui.selectOption;
+                $(".layui-breadcrumb").find("a").first().html("<i class='layui-icon layui-icon-refresh-3'></i>")
+            $(".layui-breadcrumb").find("a").first().attr("href","javascript:void(0);");
+            $(".layui-breadcrumb").find("a").first().attr("ew-event","refresh");
+                var arrShow = function insertionSort(array){
+                        if(Object.prototype.toString.call(array).slice(8,-1) ==='Array'){
+
+                            for (var i = 1; i < array.length; i++) {
+                            var key = array[i];
+                            var j = i - 1;
+                            while (j >= 0 && array[j] > key) {
+                            array[j + 1] = array[j];
+                            j--;
+                            }
+                            array[j + 1] = key;
+                            }
+                            return array;
+                        }else{
+                            return 'array is not an Array!';
+                        }
+                    };
+                       
+                    function sortBy(field) {
+                        return (x, y) => {
+                            return x[field] - y[field];
+                        }
+                    }
+                    
+                selectOption.send_req('qisheng/Alarmanalysis/data_chart.html', {}, function(data){
+                    var arr1 = [],arr2 = [],arr3 = [],arr4 = [];
+                    data.alarm_company_cnt.forEach((ele) => {
+                        arr1.push(ele.company_name)
+                    })
+                    data.alarm_type_cnt.forEach((ele) => {
+                        arr3.push(ele.handle_type)
+                    })
+                    // console.log(data.alarm_type_cnt)
+                    data.alarm_company_cnt = data.alarm_company_cnt.sort(sortBy("cnt"))
+                    data.alarm_type_cnt = data.alarm_type_cnt.sort(sortBy("cnt"))
+
+                    arr2 = data.alarm_company_cnt.map((item) => {
+                        return { value: item.cnt, name: item.company_name }
+                    })
+                    arr4 = data.alarm_type_cnt.map((item) => {
+                        return { value: item.cnt, name: item.handle_type }
+                    })
+                     
+                    myChart1(arr3,arr4);
+                    myChart2(arr1,arr2);
+                })
+        
+                //渲染表格
+                table.render({
+                    elem: '#roleTable',
+                    // width: '1000',
+                    skin: 'line',
+                    url: serverUrl + 'qisheng/Alarmanalysis/lst.html',
+                    // where: {
+                    //     access_token: config.getToken()
+                    // },
+                    page: true,
+                    // cellMinWidth: 100,
+                    cols: [[
+                        {type: 'numbers'},
+                        {field: 'company_name', title: '企业名称'},
+                        {field: 'buy_power', title: '均到当日购电量(KW·h)'},
+                        {field: 'real_user_power', title: '实际使用电量(KW·h)'},
+                        {field: 'area_value', title: '范围比例值'},
+                        {field: 'alarm_date', title: '报警日期'},
+                        {field: 'config_common', title: '报警配置备注'}
+                    ]]
+                });
+        
+                // 添加按钮点击事件
+                $('#roleBtnAdd').click(function () {
+                    showEditModel();
+                });
+        
+                // 搜索按钮点击事件
+                $('#roleBtnSearch').click(function () {
+                    var keyword = $('#roleEdtSearch').val();
+                    table.reload('roleTable', {where: {keyword: keyword}});
+                });
+        
+                // 工具条点击事件
+                table.on('tool(roleTable)', function (obj) {
+                    var data = obj.data;
+                    if (obj.event === 'edit') { //修改
+                        showEditModel(data);
+                    } else if (obj.event === 'del') { // 删除
+                        doDelete(obj);
+                    } else if (obj.event === 'auth') {  // 权限管理
+                        showPermDialog(obj.data.roleId);
+                    }
+                });
+                
+                
+                //排序
+                $('#cbdlpx').click('on', () => {
+                	 table.reload('roleTable', {
+		                where: {
+		                    where: { 
+		                        'orderword': 'chao_power'
+		                    } 
+		                }
+		            });
+                })
+                
+                
+                $('#cbbfbpx').click('on', () => {
+                    table.reload('roleTable', {
+		                where: {
+		                    where: { 
+		                        'orderword': 'chao_bili'
+		                    } 
+		                }
+		            });
+                })
+        
+                // 图表
+                function myChart1(data1, data2){
+                    // 基于准备好的dom，初始化echarts实例
+                    var myChart = echarts.init(document.getElementById('main1'));
+                    // 指定图表的配置项和数据
+                    option = {
+                        title: {
+                            text: '报警原因占比',
+                            left: '20',
+                            y: '10'
+                        },
+                        tooltip : {
+                            trigger: 'item',
+                            formatter: "{b} : {c} ({d}%)"
+                        },
+                        legend: {
+                            // orient: 'vertical',
+                            // top: 'middle',
+                            bottom: 10,
+                            left: 'center',
+                            data: data1,
+                        },
+                        series : [
+                            {
+                                type: 'pie',
+                                radius : '65%',
+                                center: ['50%', '50%'],
+                                selectedMode: 'single',
+                                data:data2,
+                                itemStyle: {
+	                                normal: {
+						                borderWidth: 0,
+						               borderColor: '#ffffff',
+								  
+                                    color:function(params) {
+//                                  //自定义颜色
+                                        var colorList1 = ['#adcf32','#65b62f','#43a635','#338b27','#1b6f0f','#0d7871','#096a64','#09544f','#053b37','#052826']
+////                                      var colorList1 = ['#65b62f','#43a435','#24b9af','#13a79d','#0c968d','#0d857d','#0d7871','#096a64','#09544f','#053b37']
+//                                      
+                                        return colorList1[params.dataIndex]
+                                     }
+                                   }
+                               }
+                            }
+                        ]
+                    };
+                    // 使用刚指定的配置项和数据显示图表。
+                    myChart.setOption(option);
+                }
+                function myChart2(data1, data2){
+                   // 基于准备好的dom，初始化echarts实例
+                   var myChart = echarts.init(document.getElementById('main2'));
+                    
+                    // 指定图表的配置项和数据
+                    option = {
+                        title: {
+                            text: '报警前五企业占比',
+                            left: '20',
+                            y: '10'
+                        },
+                        tooltip : {
+                            trigger: 'item',
+                            formatter: "{b} : {c} ({d}%)"
+                        },
+                        legend: {
+                            // orient: 'vertical',
+                            // top: 'middle',
+                            bottom: 10,
+                            left: 'center',
+                            data: data1
+                        },
+                        series : [
+                            {
+                                type: 'pie',
+                                radius : '65%',
+                                center: ['50%', '50%'],
+                                selectedMode: 'single',
+                                data: data2,
+                                itemStyle: {
+                                	  normal: {
+							                borderWidth: 0.001,
+							                borderColor: '#000000',
+							           
+//							            emphasis: {
+//							                borderWidth: 0,
+//							                shadowBlur: 0,
+//							                shadowOffsetX: 0,
+//							                shadowColor: 'rgba(0, 0, 0, 0)'
+//							            },
+//							        
+							
+//                                  emphasis: {
+//                                      shadowBlur: 10,
+//                                      shadowOffsetX: 0,
+//                                      shadowColor: 'rgba(0, 0, 0, 0.5)'
+//                                  },
+	                                    color:function(params) {
+	                                    //自定义颜色
+//	                                      var colorList2 = ['#adcf32','#65b62f','#43a635','#338b27','#1b6f0f','#0d7871','#096a64','#09544f','#053b37','#052826']
+//											var colorList2 = ['#27d6ca','#24b9af','#13a79d','#0c968d','#0d857d','#0d7871','#096a64','#09544f','#053b37','#052826'];
+	                                      var colorList2 = ['#abcf32','#65b62f','#43a635','#0d7871','#096a64','#053b37','#052826']
+	                                    
+	                                      return colorList2[params.dataIndex]
+	                                     }
+                                     }
+                                }
+                            }
+                        ]
+                    };
+                    // 使用刚指定的配置项和数据显示图表。
+                    myChart.setOption(option);
+                }
+                // 删除
+                function doDelete(obj) {
+                    layer.confirm('确定要删除吗？', {
+                        offset: '65px',
+                        skin: 'layui-layer-admin'
+                    }, function (i) {
+                        layer.close(i);
+                        layer.load(2);
+                        admin.req('role/' + obj.data.roleId, {}, function (res) {
+                            layer.closeAll('loading');
+                            if (res.code == 200) {
+                                layer.msg(res.msg, {icon: 1});
+                                obj.del();
+                            } else {
+                                layer.msg(res.msg, {icon: 2});
+                            }
+                        }, 'DELETE');
+                    });
+                }
+        
+                // 显示编辑弹窗
+                function showEditModel(data) {
+                    admin.open({
+                        type: 1,
+                        area: '360px',
+                        offset: '65px',
+                        title: data ? '修改角色' : '添加角色',
+                        content: $('#roleForm').html(),
+                        success: function () {
+                            form.val('roleForm', data);
+                            // 表单提交事件
+                            form.on('submit(roleFormSubmit)', function (d) {
+                                layer.load(2);
+                                admin.req('role', d.field, function (res) {
+                                    layer.closeAll('loading');
+                                    if (res.code == 200) {
+                                        layer.msg(res.msg, {icon: 1});
+                                        table.reload('roleTable');
+                                        layer.closeAll('page');
+                                    } else {
+                                        layer.msg(res.msg, {icon: 2});
+                                    }
+                                }, data ? 'PUT' : 'POST');
+                                return false;
+                            });
+                        }
+                    });
+                }
+            });
+        </script>

@@ -1,0 +1,121 @@
+<style>
+    #roleAuthTable + .layui-table-view .layui-table tbody tr:hover {
+        background-color: transparent;
+    }
+</style>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-form toolbar">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <!-- <div class="layui-input-inline">
+                            <select name="city" lay-search>
+                                <option value="" selected>选择城市</option>
+                                <option value="010">太原</option>
+                                <option value="021">石家庄</option>
+                                <option value="0571">北京</option>
+                            </select>
+                        </div>
+                        <div class="layui-input-inline">
+                            <select name="hanye" lay-search>
+                                <option value="" selected>行业名称</option>
+                                <option value="040">互联网</option>
+                                <option value="031">金融</option>
+                                <option value="051">煤炭</option>
+                            </select>
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="text" class="layui-input" id="test16" placeholder="选择时间">
+                        </div> -->
+                        <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <input id="keyWordtSearch" class="layui-input" type="text" placeholder="关键字查询"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button id="roleBtnSearch" class="layui-btn icon-btn bgcgd"><i class="layui-icon">&#xe615;</i>查询</button>
+                    </div>
+                    <div class="layui-inline">
+                        <button id="roleBtnSearch" class="layui-btn icon-btn bgcgd export"><i class="layui-icon">&#xe615;</i>导出</button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="layui-table" id="rizhiTable" lay-filter="rizhiTable"></table>
+        </div>
+    </div>
+</div>
+    
+    <!-- js部分 -->
+    <script>
+        layui.use(['layer', 'form', 'table', 'util', 'admin', 'config', 'tableX', 'laydate','serverUrl'], function () {
+            var $ = layui.jquery;
+            var layer = layui.layer;
+            var form = layui.form;
+            form.render();
+            var table = layui.table;
+            var util = layui.util;
+            var admin = layui.admin;
+            var config = layui.config;
+            var tableX = layui.tableX;
+            var laydate = layui.laydate;
+            var serverUrl = layui.serverUrl;
+            var selectOption = layui.selectOption;
+            $(".layui-breadcrumb").find("a").first().html("<i class='layui-icon layui-icon-refresh-3'></i>")
+            $(".layui-breadcrumb").find("a").first().attr("href","javascript:void(0);");
+            $(".layui-breadcrumb").find("a").first().attr("ew-event","refresh");
+
+    
+            //渲染表格
+            var ins1 = table.render({
+                elem: '#rizhiTable',
+                title: '启申操作日志',
+                url: serverUrl + 'qisheng/Log/lst.html',
+                // where: {
+                //     search_word: config.getToken()
+                // },
+                page: true,
+                cellMinWidth: 100,
+                cols: [[
+                    {type: 'numbers'},
+                    {field: 'user_name', title: '用户昵称'},
+                    {field: 'common', title: '日志内容'},
+                    {field: 'log_type', title: '日志类型' ,templet: function(d){
+                      if(d.log_type == 1) return '操作日志';
+                      if(d.log_type == 2) return '错误日志';
+                    }
+                 },
+                    {field: 'add_datetime', title: '记录时间'},
+                    // {align: 'center', toolbar: '#roleTableBar', title: '操作', minWidth: 200}
+                ]],
+                done: function (res, curr, count) {
+                    exportData = res.data;
+                }
+                // done: function (res, curr, count) {
+                //     exportData=res.data;
+                //     table.exportFile(ins1.config.id,exportData, 'xls');
+                // }
+            });
+            //导出按钮
+            $(".export").click(function () {
+                table.exportFile(ins1.config.id, exportData, 'xls');
+            });
+        // 删除
+        function doDelete(obj) {
+            layer.confirm('确定要删除吗？', {
+                offset: '65px',
+                skin: 'layui-layer-admin'
+            }, function (i) {
+                layer.close(i);
+                layer.load(2);
+                selectOption.send_req('qisheng/industry/del.html', {id: obj.data.id}, function(){
+                    layer.closeAll('loading');
+                    table.reload('roleTable');
+                    layer.closeAll();
+                })
+            });
+        }
+    })
+    </script>

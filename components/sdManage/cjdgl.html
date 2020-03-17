@@ -1,0 +1,244 @@
+<style>
+    #roleAuthTable + .layui-table-view .layui-table tbody tr:hover {
+        background-color: transparent;
+    }
+    .layui-form-select dl { max-height:100px !important; }
+</style>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-form toolbar">
+                <div class="layui-form-item">
+                    <!-- <div class="layui-inline">
+                        <label class="layui-form-label w-auto">搜索：</label>
+                        <div class="layui-input-inline">
+                            <input id="roleEdtSearch" class="layui-input" type="text" placeholder="选择采集点"/>
+                        </div>
+                    </div> -->
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <input id="keyWordtSearch" class="layui-input" type="text" placeholder="关键字查询"/>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button id="roleBtnSearch" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>查询</button>
+                        <button id="roleBtnAdd" class="layui-btn icon-btn"><i class="layui-icon">&#xe654;</i>添加</button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="layui-table" id="caijiTable" lay-filter="caijiTable"></table>
+        </div>
+    </div>
+</div>
+
+<!-- 表格操作列 -->
+<script type="text/html" id="roleTableBar">
+    <a class="layui-btn layui-btn-primary layui-btn-xs bgccc" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs bg999" lay-event="del">删除</a>
+</script>
+<!-- 表单弹窗 -->
+<script type="text/html" id="role_Form">
+    <form lay-filter="roleForm" class="layui-form model-form">
+        <input name="DeviceId" type="hidden"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="txt-impt">*</span>所属企业</label>
+            <div class="layui-input-block">
+                <select name="company_id" id="company" lay-verify="required" lay-search>
+                    <option value="" selected>选择企业</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="txt-impt">*</span>采集点名称</label>
+            <div class="layui-input-block">
+                <input name="DeviceName" placeholder="请输入采集点名称" type="text" class="layui-input"
+                        maxlength="20" required lay-verify="required"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="txt-impt">*</span>编号</label>
+            <div class="layui-input-block">
+                <input name="UDeviceId" placeholder="请输入编号" type="text" class="layui-input"
+                        maxlength="20" required lay-verify="required"/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="txt-impt">*</span>是否参与总用电计算</label>
+            <div class="layui-input-block"><input type="checkbox" checked="" lay-verify="required" name="is_totall_count" lay-skin="switch"  value="1" lay-text="是 | 否"></div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">备注</label>
+            <div class="layui-input-block">
+                <textarea name="common" placeholder="请输入备注" class="layui-textarea" maxlength="200"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item center">
+            <div class="layui-input-block">
+                <button class="layui-btn layui-btn-primary" type="button" ew-event="closeDialog">取消</button>
+                <button class="layui-btn" lay-filter="roleFormSubmit"  lay-submit="" type="submit">确定</button>
+            </div>
+        </div>
+    </form>
+</script>
+<!-- 接口权限 -->
+<script type="text/html" id="authModel">
+    <table class="layui-table" id="roleAuthTable" lay-filter="roleAuthTable"></table>
+</script>
+
+<!-- js部分 -->
+<script>
+    layui.use(['layer', 'form', 'table', 'util', 'admin', 'config', 'tableX', 'serverUrl'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var util = layui.util;
+        var admin = layui.admin;
+        var config = layui.config;
+        var tableX = layui.tableX;
+        var serverUrl = layui.serverUrl;
+        var selectOption = layui.selectOption;
+        $(".layui-breadcrumb").find("a").first().html("<i class='layui-icon layui-icon-refresh-3'></i>")
+        $(".layui-breadcrumb").find("a").first().attr("href","javascript:void(0);");
+        $(".layui-breadcrumb").find("a").first().attr("ew-event","refresh");
+        //渲染表格
+        table.render({
+            elem: '#caijiTable',
+            url: serverUrl + 'qisheng/Equipment/lst.html',
+            // where: {
+            //     access_token: config.getToken()
+            // },
+            page: true,
+            // cellMinWidth: 100,
+            cols: [[
+                {type: 'numbers'},
+                {field: 'DeviceName', title: '采集点名称'},
+                {field: 'UDeviceId', title: '编号'},
+                {field: 'company_name', title: '所属企业'},
+                {field: 'is_totall_count', title: '是否参与总电量计算' ,templet: function(d){
+                      if(d.is_totall_count == 1) return '是';
+                      if(d.is_totall_count == 2) return '否';
+                    }
+                 },
+                 {field: 'common', title: '备注'},
+                {align: 'center', toolbar: '#roleTableBar', title: '操作', minWidth: 200}
+            ]],
+            done: function(){
+                // layer.closeAll('loading');
+            }
+        });
+
+        // 添加按钮点击事件
+        $('#roleBtnAdd').click(function () {
+            showEditModel();
+        });
+
+        // 搜索按钮点击事件
+        $('#roleBtnSearch').click(function () {
+            var keyword = $('#keyWordtSearch').val();
+            table.reload('caijiTable', {
+                where: {
+                    where: { 
+                        'search_word': keyword
+                    } 
+                }
+            });
+        });
+
+        // 工具条点击事件
+        table.on('tool(caijiTable)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'edit') { //修改
+                showEditModel(data);
+            } else if (obj.event === 'del') { // 删除
+                doDelete(obj);
+            } else if (obj.event === 'auth') {  // 权限管理
+                showPermDialog(obj.data.roleId);
+            }
+        });
+
+        // 删除
+        function doDelete(obj) {
+            layer.confirm('确定要删除吗？', {
+                offset: '65px',
+                skin: 'layui-layer-admin'
+            }, function (i) {
+                layer.close(i);
+                layer.load(2);
+                selectOption.send_req('qisheng/Equipment/del.html', {DeviceId: obj.data.DeviceId}, function(){
+                    layer.closeAll('loading');
+                    table.reload('caijiTable');
+                    layer.closeAll();
+                })
+            });
+        }
+        var cityArr = [];
+
+        selectOption.send_req('qisheng/Company/lst.html', {}, function(data){
+            const s = new Set();
+            data.data.forEach((ele, index) => {
+                cityArr.push({id: ele.id, categoryName: ele.name})
+            })
+            cityArr.forEach(x => s.add(x));
+            // selectOption.showCategory(cityArr, 1,'#company')
+            // form.render('select');
+        })
+        // 显示编辑弹窗
+        function showEditModel(data) {
+           
+            admin.open({
+                type: 1,
+                area: '600px',
+                offset: 'auto',
+                title: data ? '修改采集点' : '添加采集点',
+                content: $('#role_Form').html(),
+                success: function () {
+                    // selectOption.send_req('qisheng/Company/lst.html', {}, function(data){
+                    //     var cityArr = [];
+                    //     const s = new Set();
+                    //     data.data.forEach((ele, index) => {
+                    //         cityArr.push({id: ele.id, categoryName: ele.name})
+                    //     })
+                    //     cityArr.forEach(x => s.add(x));
+                        selectOption.showCategory(cityArr, 1,'#company')
+                        form.render('select');
+                    // })
+                    if(data){
+                        $("#company").val(data.company_id);
+                        if(data.is_totall_count == 1 ){
+                            form.val("roleForm", {"is_totall_count": true}); 
+                        }else{
+                            form.val("roleForm", {"is_totall_count": false}); 
+                        }
+                    }
+                    form.val('roleForm', data);
+
+                    // 表单提交事件
+                    form.on('submit(roleFormSubmit)', function (d) {
+                        
+                        d.field.company_name = $("#company option:selected").text();
+                        var opt = $("input[name='is_totall_count']").is(':checked'); 
+                        if(opt){
+                            d.field.is_totall_count = 1
+                        }else{
+                            d.field.is_totall_count = 2
+                        }
+                        d.field.DeviceId = $("input[name='DeviceId']").val()
+                        d.field.DeviceName = $("input[name='DeviceName']").val()
+                        d.field.UDeviceId = $("input[name='UDeviceId']").val()
+                        d.field.company_id = $("#company option:selected").val()
+                        layer.load(2);
+                        selectOption.send_req('qisheng/Equipment/add_or_save.html', d.field, function(data){
+                            layer.closeAll('loading');
+                            table.reload('caijiTable');
+                            layer.closeAll();
+                        })
+                        return false;
+                    });
+                }
+            });
+        }
+
+    });
+</script>
